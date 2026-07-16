@@ -6,6 +6,8 @@
     "name": "pss",
     "email": "parkss@daonplace.com"
   },
+  "homepage": "https://github.com/perter-parker/whale",
+  "repository": "https://github.com/perter-parker/whale",
   "license": "MIT",
   "keywords": [
     "workflow",
