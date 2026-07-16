@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "whale",
+  "description": "Whale 워크플로 프레임워크 마켓플레이스 — 역할 기반 에이전트 팀 오케스트레이션",
+  "owner": {
+    "name": "pss",
+    "email": "parkss@daonplace.com"
+  },
+  "plugins": [
+    {
+      "name": "whale",
+      "source": "./",
+      "description": "역할 기반 에이전트 팀을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크",
+      "category": "workflow"
+    }
+  ]
+}

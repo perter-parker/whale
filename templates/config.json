@@ -1,0 +1,33 @@
+{
+  "name": "whale",
+  "description": "역할 기반 에이전트 팀을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크",
+  "modeA_chain": [
+    "dba",
+    "be-developer",
+    "fe-developer",
+    "qa"
+  ],
+  "_modeA_note": "자동 체인은 구현·검증 4역할만. planner/designer/domain 은 온디맨드(roles 로 단독 호출). domain-expert 는 순수 온디맨드 최종 리뷰어(/whale:domain).",
+  "roles": {
+    "plan": "planner",
+    "design": "designer",
+    "domain": "domain-expert",
+    "dba": "dba",
+    "be": "be-developer",
+    "fe": "fe-developer",
+    "qa": "qa"
+  },
+  "_roles_note": "값은 Agent 툴로 dispatch 할 때 쓰는 agentType(에이전트 name). 플러그인이 whale:dba 처럼 네임스페이스를 붙이면 그 값으로 교체한다.",
+  "scopeDir": ".planning/milestone",
+  "stateFile": ".claude/whale/state.md",
+  "reviewer": "리더(사용자)",
+  "paths": {
+    "prd": "docs/PRD",
+    "prototype": "docs/prototype",
+    "screenSpecs": "docs/prototype/screen-specs",
+    "screenDesigns": "docs/prototype/screen-designs",
+    "screenSpecTemplate": "docs/prototype/_templates/화면정의서_TEMPLATE.md",
+    "screenDesignTemplate": "docs/prototype/_templates/화면설계서_TEMPLATE.md"
+  },
+  "_paths_note": "프로젝트마다 문서 경로가 다르면 여기만 수정한다. 명령어는 이 값을 읽어 화면정의서/설계서 위치를 결정한다."
+}
