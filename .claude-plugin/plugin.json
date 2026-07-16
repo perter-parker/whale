@@ -1,7 +1,7 @@
 {
   "name": "whale",
   "description": "역할 기반 에이전트 팀(dba·be·fe·qa + planner·designer·domain-expert)을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크. 자동 체인(Mode A)·피어 협업(Mode B)·화면정의서/설계서 산출을 슬래시 명령어로 구동한다.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "pss",
     "email": "parkss@daonplace.com"
