@@ -2,22 +2,22 @@
   "name": "whale",
   "description": "역할 기반 에이전트 팀을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크",
   "modeA_chain": [
-    "dba",
-    "be-developer",
-    "fe-developer",
-    "qa"
+    "whale:dba",
+    "whale:be-developer",
+    "whale:fe-developer",
+    "whale:qa"
   ],
   "_modeA_note": "자동 체인은 구현·검증 4역할만. planner/designer/domain 은 온디맨드(roles 로 단독 호출). domain-expert 는 순수 온디맨드 최종 리뷰어(/whale:domain).",
   "roles": {
-    "plan": "planner",
-    "design": "designer",
-    "domain": "domain-expert",
-    "dba": "dba",
-    "be": "be-developer",
-    "fe": "fe-developer",
-    "qa": "qa"
+    "plan": "whale:planner",
+    "design": "whale:designer",
+    "domain": "whale:domain-expert",
+    "dba": "whale:dba",
+    "be": "whale:be-developer",
+    "fe": "whale:fe-developer",
+    "qa": "whale:qa"
   },
-  "_roles_note": "값은 Agent 툴로 dispatch 할 때 쓰는 agentType(에이전트 name). 플러그인이 whale:dba 처럼 네임스페이스를 붙이면 그 값으로 교체한다.",
+  "_roles_note": "값은 Agent 툴로 dispatch 할 때 쓰는 agentType. 플러그인 에이전트는 whale: 네임스페이스로 등록된다. 프로젝트 로컬에 같은 이름의 특화 에이전트(.claude/agents/<role>.md)가 있으면 bare 이름으로 교체해 그것을 우선 사용할 수 있다.",
   "scopeDir": ".planning/milestone",
   "stateFile": ".claude/whale/state.md",
   "reviewer": "리더(사용자)",
