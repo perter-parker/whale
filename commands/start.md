@@ -13,8 +13,8 @@ allowed-tools: Bash(ls:*), Bash(cat:*), Read, Write, Edit, Agent
 ## 현재 흐름 상태
 @.claude/whale/state.md
 
-## 현재 마일스톤 범위
-!`SCOPE=$(grep -o '"scopeDir"[^,]*' .claude/whale/config.json 2>/dev/null | cut -d'"' -f4); SCOPE=${SCOPE:-.planning/milestone}; ls "$SCOPE" 2>/dev/null; echo '---'; cat "$SCOPE"/*.md 2>/dev/null | head -80`
+## 현재 마일스톤 범위 (기본 .planning/milestone — config.json.scopeDir 이 다르면 그 경로 기준으로 판단)
+!`ls .planning/milestone/ 2>/dev/null; echo '---'; cat .planning/milestone/*.md 2>/dev/null | head -80`
 
 ## 절차
 

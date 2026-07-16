@@ -10,8 +10,8 @@ allowed-tools: Bash(ls:*), Bash(cat:*), Read
 ## 현재 흐름 상태
 @.claude/whale/state.md
 
-## 현재 마일스톤
-!`SCOPE=$(grep -o '"scopeDir"[^,]*' .claude/whale/config.json 2>/dev/null | cut -d'"' -f4); SCOPE=${SCOPE:-.planning/milestone}; cat .planning/STATE.md 2>/dev/null | head -30; echo '---'; ls "$SCOPE" 2>/dev/null`
+## 현재 마일스톤 (기본 .planning — config.json.scopeDir 이 다르면 그 경로 기준으로 판단)
+!`cat .planning/STATE.md 2>/dev/null | head -30; echo '---'; ls .planning/milestone/ 2>/dev/null`
 
 ## 출력 형식
 
