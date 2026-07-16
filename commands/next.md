@@ -1,8 +1,8 @@
 ---
-description: 현재 단계 산출물을 검증하고 체인의 다음 에이전트로 핸드오프 (핸드오프 자동화)
+description: 현재 phase 게이트를 검증하고 생애주기 루프의 다음 단계로 핸드오프 (승인 게이트·피드백 루프 포함)
 allowed-tools: Bash(ls:*), Bash(cat:*), Bash(grep:*), Read, Write, Edit, Agent
 ---
-# /whale:next — 다음 단계로 핸드오프
+# /whale:next — 다음 phase 로 핸드오프
 
 ## Whale 설정
 @.claude/whale/config.json
@@ -12,28 +12,45 @@ allowed-tools: Bash(ls:*), Bash(cat:*), Bash(grep:*), Read, Write, Edit, Agent
 
 ## 절차
 
-1. **현재 단계 식별:** state.md 활성 흐름에서 ▶ 진행중 단계와 역할을 읽는다. 활성 흐름이 없으면 "활성 흐름 없음 — `/whale:start` 로 시작" 을 안내하고 멈춘다.
-2. **산출물 검증 (존재 + 미결):**
-   a. (존재) 현재 역할의 에이전트 정의에 명시된 산출물이 실제 존재하는지 Read/ls 로 확인.
-   b. (입력 게이트) 현재 단계가 **dba**(체인 1단계)인 경우, 착수 전 입력 확인:
-      - 승인된 화면정의서(`config.json.paths.screenSpecs` 하위, 상태='승인됨') 또는 PRD(`config.json.paths.prd`) 가 존재하는지 확인. 없으면 **미충족**(기획 입력 부재 보고 후 멈춤).
-      > planner/designer/domain 은 자동 체인에 없다. 기획·디자인·도메인 산출물은 사람이 제공하거나 `/whale:plan|design|domain` 으로 온디맨드 생성한다.
-   c. (설계 게이트) 자동 체인 역할(dba·be-developer·fe-developer)이고
-      활성 화면설계서(`config.json.paths.screenDesigns` 하위 `{화면ID}_*.md`)가 존재하는 경우, 추가 검증:
-      - 해당 역할의 소유 섹션(dba=§3 / be-developer=§5 / fe-developer=§6)이
-        템플릿 placeholder({...})가 아닌 실제 내용으로 채워졌는지 확인. 비었으면 **미충족**.
-        (§2 domain-expert·§4 designer 섹션은 온디맨드 작성 대상이므로 자동 게이트에서 제외.)
-      - 예외 분류 확인: [설계결정]은 §7에, [확인필요]·[변경-게이트]는 §9에 기재.
-      - `grep -nE '\[확인필요\]|\[변경-게이트\]' <파일>` 실행. §9에 미해소 항목이 한 건이라도 있으면
-        사람 확인 사항이므로 리더에게 보고하고 **미충족**(다음 단계로 넘기지 않음).
-      - 현재 단계가 **fe-developer**(마지막 설계 기여)인 경우 추가로: §8 추적표가 명세의 모든 기능을
-        누락 없이·기준문서 실명으로 매핑했는지 확인(매핑 누락=누락 / 실명 없음=발명 → **미충족**),
-        §9가 '없음'·상태가 '승인됨'인지 확인. 통과해도 **리더 명시 승인 없이는 qa 로 넘기지 않는다.**
-   d. 위 (b)(c) 게이트에 해당하지 않는 단계는 기존대로 (존재) 검증만 적용.
-3. **미충족 시:** 무엇이 누락됐는지 구체적으로 보고하고 **멈춘다**(다음 단계로 넘기지 않음). state 는 그대로 둔다. 미충족 사유를 명시한다: (존재 누락) 어떤 파일이 없는지 / (입력 부재) 승인된 화면정의서·PRD 없음 / (설계 미완) 비어있는 소유 섹션 / (설계 게이트) §9 미해소 [변경-게이트]·[확인필요] 위치 / (추적표) §8 누락·발명 행 / (미승인) 리더 승인 대기.
-4. **충족 시:**
-   - state.md 에서 현재 단계를 ✅ 완료로, `config.json.modeA_chain` 의 다음 단계를 ▶ 진행중으로 Edit.
-   - 다음 역할 agentType(`config.json.roles`)을 **Agent 툴로 dispatch**. 직전 단계 산출물(경로·핵심 결정)을 컨텍스트로 전달.
-5. **체인 끝(qa 완료) 도달 시:** `config.json.reviewer` 에게 최종 검수를 요청하는 요약을 출력하고, 흐름을 "완료된 흐름(히스토리)" 로 이동.
+1. **현재 phase 식별:** state.md 활성 흐름에서 ▶ 진행중 phase 와 그 phase 의 `role`·`gate`(config.lifecycle.phases)를 읽는다. run-id 도 읽는다. 활성 흐름이 없으면 "활성 흐름 없음 — `/whale:start <task>` 로 시작" 안내 후 멈춘다.
 
-**규칙:** 순서·역할은 `config.json` 에서 읽는다. 검증 없이 다음 단계로 넘기지 않는다. 동결 대상(프로젝트 CLAUDE.md 에 명시된 수정 금지 스키마·모듈)은 직접 변경하지 않고 [변경-게이트]로 올린다.
+2. **게이트 검증 (gate 타입별 분기):** 산출물은 `config.paths.runArtifacts/<run-id>/` 하위에서 확인한다.
+
+   - **`gate == "artifact"`** — 해당 phase 의 `produces` 파일이 존재하고 실제 내용으로 채워졌는지 Read/ls 로 확인.
+     - **research**: `research.md` 존재 + 비어있지 않음(R1~R7).
+     - **plan**: `plan.md` 존재 + **7섹션 전부** 채워짐. `grep -nE '^## P[1-7]\.' <plan.md>` 로 P1~P7 헤더 7개 존재 확인. placeholder(`{...}`)면 미충족.
+     - **implement**: 3의 하위 dispatch 가 모두 완결됐는지 확인(아래 3 참조).
+     - **summarize**: `summary.md` 존재 → 흐름 종료(아래 6).
+   - **`gate == "approval"`** (approve phase) — state.md 승인 상태가 `APPROVED` 인지 확인.
+     - `PENDING` 이면 **미충족**: "승인 대기 — `/whale:approve <run-id>` 또는 대화에 정확히 `APPROVED: <run-id>` 입력 필요" 를 보고하고 멈춘다. `config.approvalGate.acceptLoose=false` 이므로 'ok'·'진행해' 는 승인으로 인정하지 않는다. (단, 사용자가 이번 대화에 정확한 `APPROVED: <run-id>` 문구를 남겼다면 승인으로 인정하고 state 를 APPROVED 로 Edit 한 뒤 통과.)
+     - `REJECTED` 이면 phase 를 plan 으로 되돌리고 재계획을 안내.
+   - **`gate == "verdict"`** (review·qa phase) — 해당 산출물(`review.md`/`qa.md`)에서 `재구현 필요: YES/NO`(VERDICT 블록)를 읽는다. 판정이 없으면 **미충족**(에이전트 미완). → 판정 처리는 아래 4.
+     > **E2E 는 독립 phase 가 아니다**(`config.e2e.runOn.mode=qa-conditional`). qa 는 critical path 가 있으면 내부에서 e2e-tester(`config.roles.e2e`)를 dispatch 하고, `e2e.md` 의 APP_BUG 를 자신의 `qa.md` VERDICT 에 흡수한다. 따라서 게이트는 여전히 `qa.md` 의 재구현 필요 YES/NO 하나이며, phase 표를 늘리지 않는다.
+     > **Security 도 독립 phase 가 아니다**(`config.security.runOn.mode=qa-conditional`). qa 는 보안 민감 변경이면 security-reviewer(`config.roles.security`)를 dispatch 하고 `security.md` 의 Critical/High 를 `qa.md` VERDICT 에 흡수한다(게이트는 여전히 `qa.md` 하나). 단 `security.md` 가 **HOLD**(사람 필수 게이트 저촉)면 qa 는 summarize 로 진행하지 않고 **리더 보안 승인 대기**로 멈춘다(무인 자동 통과 방지). **Refactor 는 생애주기와 무관**하므로 이 커맨드가 다루지 않는다(/whale:refactor 독립 실행).
+
+3. **implement phase 특수 처리 (컨테이너 순차 dispatch):**
+   현재 phase 가 `implement` 이면:
+   - `runs/<run-id>/plan.md` 의 **P3(구현 단계)·P4(전문가 배정)** 를 읽어, `config.domainExperts.order`(dba→be→fe) 중 **계획에서 담당='예' 인 전문가만** 필터링한다. state.md "implement 하위 dispatch" 표에 그 전문가들만(순서대로) 넣는다. 계획에 없는 전문가는 표에 넣지 않는다(예: BE-only 면 be 만).
+   - 표에서 다음 ⬜ 전문가 **하나**를 `config.domainExperts.roles` 매핑으로 Agent dispatch(각자 TDD). 직전 전문가 산출물·plan.md·research.md 를 컨텍스트로 전달. 완료되면 그 전문가를 ✅, "다음 전문가는 다시 `/whale:next`" 안내(한 번에 하나씩).
+   - 모든 필요한 전문가가 ✅ 면 implement phase 를 ✅ 완료로 표시하고 review 로 진행(아래 5).
+
+4. **verdict 처리 + 피드백 루프 판정 (review·qa):**
+   - 판정이 **NO**(`재구현 필요: NO`): 현재 phase 를 ✅ 완료로, 다음 phase 를 ▶ 진행중으로 하고 다음 role 을 dispatch(아래 5).
+   - 판정이 **YES**(= `config.feedbackLoop.triggerVerdict`): **피드백 루프 발동.**
+     - state.md 재시도 카운트를 읽는다. `retryCount < config.feedbackLoop.maxRetries`(기본 1)이면:
+       - retryCount++, 피드백 루프 이력 표에 행 추가(회차·트리거·지적범위·처리 phase).
+       - 현재 phase 를 `config.feedbackLoop.returnTo`(implement)로 되돌린다. `scope=targeted` 이므로 **VERDICT 수정지침이 지목한 전문가만** implement 하위 표에서 ▶(🔁 재구현중)로 재활성화(전체 재구현 금지). 그 전문가를 재 dispatch 하며 수정지침(CRITICAL/MAJOR)을 컨텍스트로 전달.
+       - 재구현 후 다시 review 로 올라온다.
+     - `retryCount >= maxRetries` 이면: **자동 진행 중단.** "재시도 상한(maxRetries={n}) 초과 — 1회 재구현 후에도 {review|qa} 재구현 필요: YES. 리더 개입 필요(직접 수정 후 재판정 / plan 으로 되돌려 재계획 / run 보관·중단)" 를 보고하고 멈춘다. state 는 그대로 둔다(무한 루프 방지).
+
+5. **충족 시 (핸드오프):**
+   - state.md 에서 현재 phase 를 ✅ 완료로, `config.lifecycle.phases` 의 다음 phase 를 ▶ 진행중으로 Edit.
+   - 다음 phase 의 `role` 을 Agent 로 dispatch(직전 산출물 경로·핵심 결정을 컨텍스트로). 단 `role==null` 인 phase:
+     - `approve`: dispatch 없이 "리더 승인 대기 — `/whale:approve <run-id>`" 안내만.
+     - `implement`: 위 3 으로 처리(도메인 전문가 dispatch).
+
+6. **미충족 시:** 무엇이 누락됐는지 구체적으로 보고하고 **멈춘다**(다음 phase 로 넘기지 않음). state 는 그대로 둔다. 사유 명시: (산출물 없음) 어떤 파일이 없는지 / (계획 미완) 7섹션 중 빠진 것 / (승인 대기) `/whale:approve` 필요 / (판정 없음) review·qa 미완 / (루프 상한 초과) 리더 개입.
+
+7. **흐름 끝(summarize 완료):** `config.json.reviewer`(리더)에게 최종 병합 검수를 요청하는 요약을 출력하고, 활성 흐름을 "완료된 흐름(히스토리)" 로 이동(run-id·재시도 횟수·summary.md 경로 기록).
+
+**규칙:** phase 순서·역할·게이트·루프 설정은 반드시 `config.json` 에서 읽는다(하드코딩 금지). 승인 없이 implement 로 넘기지 않는다. 동결 대상(프로젝트 CLAUDE.md 명시)은 직접 변경하지 않고 [변경-게이트]로 올린다. 하위호환: `lifecycle` 없고 `modeA_chain` 만 있으면 구 4역할 체인 모드(존재 검증만).
