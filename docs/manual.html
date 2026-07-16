@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐳 Whale — 사용 매뉴얼</title>
+<style>
+  :root{
+    --bg:#0f172a; --bg2:#1e293b; --panel:#ffffff; --ink:#1e293b; --muted:#64748b;
+    --line:#e2e8f0; --brand:#0ea5e9; --brand2:#0369a1; --accent:#06b6d4;
+    --ok:#16a34a; --warn:#d97706; --bad:#dc2626; --hold:#7c3aed;
+    --code-bg:#0f172a; --code-ink:#e2e8f0; --chip:#e0f2fe; --chip-ink:#0369a1;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Apple SD Gothic Neo","Noto Sans KR",sans-serif;
+    color:var(--ink);background:#f8fafc;line-height:1.7;font-size:15px}
+  code,pre,.mono{font-family:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace}
+
+  /* layout */
+  .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+  nav{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;
+    background:linear-gradient(180deg,#0f172a,#1e293b);color:#cbd5e1;padding:26px 18px}
+  nav .brand{font-size:22px;font-weight:800;color:#fff;margin:0 0 4px}
+  nav .ver{font-size:12px;color:#7dd3fc;margin-bottom:22px;letter-spacing:.03em}
+  nav a{display:block;color:#cbd5e1;text-decoration:none;padding:6px 10px;border-radius:7px;font-size:13.5px;margin:1px 0}
+  nav a:hover{background:rgba(255,255,255,.08);color:#fff}
+  nav a.active{background:var(--brand);color:#fff;font-weight:600}
+  nav .grp{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;margin:18px 0 6px 10px}
+  main{padding:0}
+  .hero{background:linear-gradient(135deg,#0369a1,#0ea5e9 60%,#06b6d4);color:#fff;padding:54px 48px 40px}
+  .hero h1{margin:0 0 10px;font-size:34px;font-weight:800}
+  .hero p{margin:0;max-width:760px;font-size:16px;opacity:.95}
+  .hero .tags{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+  .hero .tags span{background:rgba(255,255,255,.18);padding:4px 12px;border-radius:999px;font-size:12.5px;font-weight:600}
+  .content{padding:14px 48px 80px;max-width:1000px}
+  section{padding:30px 0;border-bottom:1px solid var(--line)}
+  section:last-child{border-bottom:none}
+  h2{font-size:24px;margin:8px 0 6px;padding-top:8px;display:flex;align-items:center;gap:10px}
+  h2 .n{background:var(--brand);color:#fff;width:30px;height:30px;border-radius:8px;display:inline-flex;
+    align-items:center;justify-content:center;font-size:15px;font-weight:700;flex:none}
+  h3{font-size:18px;margin:26px 0 8px;color:var(--brand2)}
+  h4{font-size:15px;margin:18px 0 6px}
+  p{margin:8px 0}
+  ul,ol{margin:8px 0 8px 4px;padding-left:22px}
+  li{margin:4px 0}
+  a.ext{color:var(--brand2)}
+
+  /* code */
+  pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;overflow-x:auto;
+    font-size:13px;line-height:1.6;margin:12px 0}
+  pre .c{color:#64748b}
+  pre .k{color:#7dd3fc}
+  pre .s{color:#86efac}
+  pre .p{color:#fca5a5}
+  code:not(pre code){background:#eef2f7;color:#0f172a;padding:2px 6px;border-radius:5px;font-size:13px}
+
+  /* tables */
+  table{border-collapse:collapse;width:100%;margin:14px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#f1f5f9;font-weight:700}
+  tr:nth-child(even) td{background:#fafcff}
+  td code{white-space:nowrap}
+
+  /* chips & callouts */
+  .chip{display:inline-block;background:var(--chip);color:var(--chip-ink);padding:1px 9px;border-radius:999px;
+    font-size:11.5px;font-weight:700;white-space:nowrap}
+  .chip.g{background:#dcfce7;color:#15803d}
+  .chip.w{background:#fef3c7;color:#b45309}
+  .chip.r{background:#fee2e2;color:#b91c1c}
+  .chip.v{background:#ede9fe;color:#6d28d9}
+  .chip.b{background:#e0e7ff;color:#4338ca}
+  .note{border-left:4px solid var(--brand);background:#f0f9ff;padding:12px 16px;border-radius:0 8px 8px 0;margin:14px 0}
+  .note.warn{border-color:var(--warn);background:#fffbeb}
+  .note.bad{border-color:var(--bad);background:#fef2f2}
+  .note.ok{border-color:var(--ok);background:#f0fdf4}
+  .note b{color:var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:14px 0}
+  .card{border:1px solid var(--line);border-radius:12px;padding:16px;background:#fff}
+  .card h4{margin:0 0 6px;font-size:15px}
+  .card p{margin:0;font-size:13px;color:var(--muted)}
+
+  /* pipeline diagram */
+  .pipe{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:16px 0;font-size:13px}
+  .pipe .step{background:#fff;border:2px solid var(--brand);color:var(--brand2);padding:6px 12px;border-radius:9px;font-weight:700}
+  .pipe .gate{background:#fef3c7;border:2px solid var(--warn);color:#b45309;padding:6px 12px;border-radius:9px;font-weight:700}
+  .pipe .arw{color:var(--muted);font-weight:700}
+  .pipe .sub{background:#f0fdfa;border:2px dashed var(--accent);color:#0e7490;padding:6px 12px;border-radius:9px;font-weight:600;font-size:12px}
+
+  .kbd{background:#0f172a;color:#e2e8f0;padding:2px 8px;border-radius:6px;font-size:12.5px;font-family:inherit}
+  .cmd{color:var(--brand2);font-weight:700}
+  .footer{padding:26px 48px;color:var(--muted);font-size:13px;background:#f1f5f9}
+  @media(max-width:820px){
+    .wrap{grid-template-columns:1fr}
+    nav{position:static;height:auto}
+    .hero,.content,.footer{padding-left:22px;padding-right:22px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- SIDEBAR -->
+<nav id="toc">
+  <div class="brand">🐳 Whale</div>
+  <div class="ver">v2.1.0 · 사용 매뉴얼</div>
+  <div class="grp">시작하기</div>
+  <a href="#intro">1. Whale이란</a>
+  <a href="#install">2. 설치 &amp; 초기화</a>
+  <a href="#concepts">3. 핵심 개념</a>
+  <div class="grp">사용법</div>
+  <a href="#lifecycle">4. 생애주기 워크플로</a>
+  <a href="#e2e">5. E2E 무인 테스트</a>
+  <a href="#gates">6. 강제 게이트 &amp; 보안</a>
+  <a href="#modeb">7. 이슈 해결 &amp; 부채상환</a>
+  <a href="#worktree">8. 병렬 worktree</a>
+  <div class="grp">레퍼런스</div>
+  <a href="#commands">9. 명령어 전체</a>
+  <a href="#agents">10. 역할(에이전트)</a>
+  <a href="#config">11. 설정(config.json)</a>
+  <a href="#artifacts">12. 산출물 파일</a>
+  <a href="#faq">13. FAQ · 트러블슈팅</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+<div class="hero">
+  <h1>🐳 Whale 사용 매뉴얼</h1>
+  <p>역할 기반 AI 에이전트 팀을 <b>슬래시 명령어</b>로 구동하는 워크플로 프레임워크.
+  작업 한 건의 생애주기(조사→계획→승인→구현→리뷰→QA→요약)를 품질 게이트와 함께 자동화하는 Claude Code 플러그인입니다.</p>
+  <div class="tags">
+    <span>생애주기 품질 루프</span><span>run-id 승인 게이트</span><span>무인 E2E 트리아지</span>
+    <span>SAST/SCA 보안</span><span>강제 Hooks</span><span>계약 우선</span><span>교차-run 메모리</span>
+    <span>병렬 worktree</span><span>슬래시 없이 자동 라우팅</span>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- 1 -->
+<section id="intro">
+  <h2><span class="n">1</span> Whale이란</h2>
+  <p>Whale은 개발 작업을 <b>역할이 나뉜 AI 에이전트들</b>과 그걸 엮는 <b>오케스트레이션 명령어</b>로 수행합니다.
+  혼자 개발해도 "조사원·기획자·개발자·리뷰어·QA·보안·기록자"로 이뤄진 나만의 팀을 갖는 셈입니다.</p>
+
+  <h3>설계 철학</h3>
+  <div class="grid">
+    <div class="card"><h4>🔒 컨텍스트 격리</h4><p>각 단계는 독립 실행. 리뷰어·QA는 구현 맥락에 물들지 않고 산출물만 보고 객관 판정.</p></div>
+    <div class="card"><h4>✋ 강제 승인 게이트</h4><p>계획은 사람이 <code>APPROVED: &lt;run-id&gt;</code>를 명시해야 구현 진입. "ok"·"진행해"는 불허.</p></div>
+    <div class="card"><h4>🔁 명시적 피드백 루프</h4><p>리뷰/QA가 "재구현 필요 YES/NO" 강제 출력. YES면 지적 전문가만 되돌림(최대 1회).</p></div>
+    <div class="card"><h4>📝 기록 강제</h4><p>모든 단계 산출물을 파일로 남기고, 결정·교훈을 run 간 누적.</p></div>
+    <div class="card"><h4>🧪 검증이 병목</h4><p>리뷰·보안은 "권고"가 아니라 Hooks로 "무조건 실행"되는 게이트.</p></div>
+    <div class="card"><h4>🧩 데이터 주도 이식성</h4><p>역할·경로·순서를 하드코딩하지 않고 <code>config.json</code>에서 읽음. 어느 프로젝트든 재사용.</p></div>
+  </div>
+
+  <div class="note">
+    <b>범용 기본 + 선택적 도메인 프로필.</b> 기본은 <b>범용</b>입니다 — whale 은 특정 아키텍처나 표준을 강제하지 않고, 각 에이전트가 프로젝트 <code>CLAUDE.md</code> 를 읽어 따릅니다.
+    공공기관 프로젝트라면 <code>config.profile.domain=public-sector-kr</code> 로 켜서 dba 에 내장된 행정안전부 DB 표준화 지침(표준도메인·감사컬럼·논리삭제·PII 암호화)을, <code>multitenant=true</code> 로 site_id 격리를 적용합니다. <b>아키텍처(레이어드/DDD/피처슬라이스)는 전적으로 프로젝트가 결정</b>합니다.
+  </div>
+</section>
+
+<!-- 2 -->
+<section id="install">
+  <h2><span class="n">2</span> 설치 &amp; 초기화</h2>
+
+  <h3>플러그인 설치</h3>
+<pre><span class="c"># 1) 마켓플레이스 등록 (로컬 경로 또는 GitHub)</span>
+/plugin marketplace add /path/to/whale-plugin
+<span class="c"># 또는</span> /plugin marketplace add &lt;github-user&gt;/whale-plugin
+
+<span class="c"># 2) 플러그인 설치</span>
+/plugin install whale</pre>
+
+  <h3>프로젝트 초기화 (프로젝트마다 1회)</h3>
+  <table>
+    <tr><th>명령어</th><th>무엇을 스캐폴드하나</th><th>필수?</th></tr>
+    <tr><td><span class="cmd">/whale:init</span></td>
+        <td><code>.claude/whale/</code>에 <code>config.json</code>·<code>state.md</code>·<code>runs/</code>·<code>memory/</code> + (부재 시) 프로젝트 <code>CLAUDE.md</code></td>
+        <td><span class="chip g">필수</span></td></tr>
+    <tr><td><span class="cmd">/whale:hooks-init</span></td>
+        <td>프로젝트 <code>.claude/settings.json</code>에 lint/test 게이트 + 위험명령 차단 훅 (스택 감지·병합)</td>
+        <td><span class="chip w">권장</span></td></tr>
+    <tr><td><span class="cmd">/whale:e2e-init</span></td>
+        <td>Playwright 설정·Helper 스켈레톤·fixture·AI 가이드·CI 워크플로</td>
+        <td><span class="chip">E2E 쓸 때</span></td></tr>
+  </table>
+
+  <div class="note ok">
+    <b>안전 원칙.</b> 초기화 명령들은 <b>기존 파일을 절대 덮어쓰지 않습니다.</b> 이미 있으면 병합안을 제시하거나 건너뜁니다.
+    <code>settings.json</code>은 사람이 승인해 병합합니다.
+  </div>
+
+  <h3>초기화 후 채울 것</h3>
+  <ul>
+    <li><b>CLAUDE.md</b> — 기술 스택·패키지 매니저·동결 대상·<b>§3 계약 SSOT</b>·<b>§7 FEATURE.md</b> 관례.</li>
+    <li><b>config.json</b> — <code>paths</code>(화면정의서·PRD 경로), 필요 시 <code>e2e</code>·<code>security</code> 블록.</li>
+    <li>각 핵심 모듈에 <b>FEATURE.md</b>(owns/does-not-own/진입점/이벤트/의존성) 배치.</li>
+  </ul>
+
+  <h3>슬래시 없이 자동 사용 (기본 동작)</h3>
+  <p><code>/whale:*</code> 를 매번 치지 않아도 <b>개발 요청이 자동으로 whale 흐름으로 진행</b>됩니다. 3개 레버가 기본 동작을 whale로 기울입니다 — <b>승인 게이트는 그대로 유지</b>됩니다.</p>
+  <table>
+    <tr><th>레버</th><th>동작</th><th>활성화</th></tr>
+    <tr><td><b>Output Style</b> (내장)</td>
+        <td><code>output-styles/whale.md</code> — "OAuth 로그인 만들어줘"만 해도 researcher→planner→⛔승인→구현→리뷰→qa→요약으로 흐름</td>
+        <td><code>force-for-plugin</code>으로 플러그인 켜면 자동. <span class="cmd">/output-style</span>로 확인·전환</td></tr>
+    <tr><td><b>CLAUDE.md 라우팅</b></td>
+        <td>프로젝트 <code>CLAUDE.md §0</code> + 전역 <code>~/.claude/CLAUDE.md</code>가 매 세션 라우팅 규칙 로드</td>
+        <td><span class="cmd">/whale:init</span>이 프로젝트에 심음 · 전역은 스니펫 블록 추가</td></tr>
+    <tr><td><b>에이전트 트리거</b></td>
+        <td>"이 코드 리뷰해줘"→reviewer, "테이블 추가"→dba 처럼 단일 작업은 바로 해당 전문가로 자동 위임</td>
+        <td>각 에이전트 <code>description</code>에 "…할 때 사용" 키워드 내장</td></tr>
+  </table>
+  <div class="note warn">
+    <b>알아둘 점.</b> Claude Code에 <b>"강제" 자동 위임은 없습니다</b> — 모델이 매번 판단합니다. 위 레버는 기본값을 강하게 기울일 뿐이고, 100% 결정적으로 가려면 여전히 <span class="cmd">/whale:start</span>·<span class="cmd">/whale:next</span>가 확실합니다.
+    Output Style·description 변경은 <b>Claude Code 재시작 또는 <span class="cmd">/reload</span></b> 후 반영됩니다. <b>사소한 작업</b>(오타·1줄)은 생애주기 없이 바로 처리됩니다.
+  </div>
+</section>
+
+<!-- 3 -->
+<section id="concepts">
+  <h2><span class="n">3</span> 핵심 개념</h2>
+
+  <h3>생애주기 7단계 (Mode A)</h3>
+  <div class="pipe">
+    <span class="step">research</span><span class="arw">→</span>
+    <span class="step">plan</span><span class="arw">→</span>
+    <span class="gate">approve ✋</span><span class="arw">→</span>
+    <span class="step">implement</span><span class="arw">→</span>
+    <span class="step">review</span><span class="arw">→</span>
+    <span class="step">qa</span><span class="arw">→</span>
+    <span class="step">summarize</span>
+  </div>
+  <p><code>implement</code>는 계획에 등장하는 도메인 전문가(dba→be→fe)만 순차 호출합니다. E2E·보안은 별도 단계가 아니라 <code>qa</code>가 필요 시 부릅니다.</p>
+
+  <h3>run-id</h3>
+  <p><span class="cmd">/whale:start</span> 시 발급되는 작업 식별자(예: <code>20260716-oauth-login-01</code>). 모든 산출물은 <code>.claude/whale/runs/&lt;run-id&gt;/</code>에 파일로 남고, 승인·상태 추적의 키가 됩니다.</p>
+
+  <h3>3종 게이트</h3>
+  <table>
+    <tr><th>게이트</th><th>적용 단계</th><th>통과 조건</th></tr>
+    <tr><td><span class="chip">artifact</span></td><td>research·plan·implement·summarize</td><td>산출물 파일이 실제 내용으로 존재</td></tr>
+    <tr><td><span class="chip w">approval</span></td><td>approve</td><td>사람이 <code>APPROVED: &lt;run-id&gt;</code> 명시 (느슨한 승인 불허)</td></tr>
+    <tr><td><span class="chip v">verdict</span></td><td>review·qa</td><td><code>재구현 필요: YES/NO</code> 판정. YES면 피드백 루프</td></tr>
+  </table>
+
+  <h3>피드백 루프</h3>
+  <p>review 또는 qa가 <b>YES</b>를 내면 → 지적된 전문가만 <code>implement</code>로 되돌려 <b>지적 범위만</b> 수정(전체 재구현 아님). <b>최대 1회</b>, 초과 시 리더에게 에스컬레이션(무한 루프 방지).</p>
+
+  <div class="note">
+    <b>qa-conditional 이란?</b> E2E(<code>e2e-tester</code>)와 보안(<code>security-reviewer</code>)은 독립 lifecycle 단계가 <b>아닙니다</b>.
+    qa 단계가 critical path/보안 민감 변경을 감지하면 내부에서 호출하고, 그 결과(APP_BUG·Critical/High)를 자신의 판정에 흡수합니다. 그래서 게이트는 여전히 <code>qa.md</code> 하나입니다.
+  </div>
+</section>
+
+<!-- 4 -->
+<section id="lifecycle">
+  <h2><span class="n">4</span> 생애주기 워크플로 (Mode A)</h2>
+  <p>신규 기능 개발의 표준 흐름입니다. 각 단계는 <span class="cmd">/whale:next</span>로 넘어갑니다.</p>
+
+  <h3>단계별 진행</h3>
+  <table>
+    <tr><th>#</th><th>명령</th><th>일어나는 일</th><th>산출물</th></tr>
+    <tr><td>1</td><td><span class="cmd">/whale:start &lt;작업설명&gt;</span></td><td>run-id 발급 → researcher 조사 시작</td><td><code>research.md</code></td></tr>
+    <tr><td>2</td><td><span class="cmd">/whale:next</span></td><td>planner가 7섹션 계획서 작성 + 승인 요청</td><td><code>plan.md</code></td></tr>
+    <tr><td>3</td><td><span class="cmd">/whale:approve &lt;run-id&gt;</span></td><td>사람이 계획 승인 (또는 <code>--reject</code>로 재계획)</td><td>—</td></tr>
+    <tr><td>4</td><td><span class="cmd">/whale:next</span> ×N</td><td>계획에 배정된 dba→be→fe를 한 번에 하나씩 TDD 구현</td><td>코드·테스트</td></tr>
+    <tr><td>5</td><td><span class="cmd">/whale:next</span></td><td>reviewer가 아키텍처·품질·부분수정 검토 (YES면 4로 복귀)</td><td><code>review.md</code></td></tr>
+    <tr><td>6</td><td><span class="cmd">/whale:next</span></td><td>qa가 AC·회귀·여정 검증 (+조건부 E2E·보안)</td><td><code>qa.md</code></td></tr>
+    <tr><td>7</td><td><span class="cmd">/whale:next</span></td><td>summarizer가 작업 결과지(PR 디스크립션) 작성 → 리더 검수</td><td><code>summary.md</code></td></tr>
+  </table>
+
+  <h3>예시 세션</h3>
+<pre><span class="cmd">/whale:start</span> OAuth 소셜 로그인 추가
+  <span class="c">→ run-id: 20260716-oauth-login-01 발급, research.md 생성</span>
+
+<span class="cmd">/whale:next</span>   <span class="c"># 계획 수립</span>
+  <span class="c">→ plan.md (P1~P7) + "승인하려면 /whale:approve 20260716-oauth-login-01"</span>
+
+<span class="cmd">/whale:approve</span> 20260716-oauth-login-01
+  <span class="c">→ 승인됨. 이제 implement 진입</span>
+
+<span class="cmd">/whale:next</span>   <span class="c"># dba 스키마 (계획에 dba가 있으면)</span>
+<span class="cmd">/whale:next</span>   <span class="c"># be API (TDD)</span>
+<span class="cmd">/whale:next</span>   <span class="c"># fe 화면 (TDD)</span>
+<span class="cmd">/whale:next</span>   <span class="c"># reviewer → 재구현 필요: NO</span>
+<span class="cmd">/whale:next</span>   <span class="c"># qa → Go, (로그인=critical → e2e·보안 자동 호출)</span>
+<span class="cmd">/whale:next</span>   <span class="c"># summarizer → summary.md, 리더 최종 검수</span></pre>
+
+  <h3>7섹션 계획서 (plan.md)</h3>
+  <p>planner가 만드는 개발 정본. reviewer·next가 파싱합니다.</p>
+  <table>
+    <tr><th>섹션</th><th>내용</th></tr>
+    <tr><td>P1 목표·범위</td><td>AC(수용 기준)·BR-ID(비즈니스 규칙)·상위 근거</td></tr>
+    <tr><td>P2 영향 범위 + 계약 우선</td><td>변경 대상 파일 + <b>계약 SSOT 표</b>(경계별 원본→파생물→codegen)</td></tr>
+    <tr><td>P3 구현 단계</td><td>필요한 도메인만 순서·의존</td></tr>
+    <tr><td>P4 전문가 배정</td><td>dba/be/fe 담당 여부 → <b>implement dispatch 필터</b></td></tr>
+    <tr><td>P5 테스트 전략</td><td>TDD Red 테스트 + <b>E2E critical path</b></td></tr>
+    <tr><td>P6 리스크·제약</td><td>동결·PII·site_id·BC 경계·마이그레이션 버전</td></tr>
+    <tr><td>P7 완료 정의</td><td>DoD 체크리스트</td></tr>
+  </table>
+
+  <h3>진행 상황 확인</h3>
+  <p><span class="cmd">/whale:status</span> — run-id·현재 phase·승인 상태·재시도 횟수·다음 액션을 표시합니다.</p>
+</section>
+
+<!-- 5 -->
+<section id="e2e">
+  <h2><span class="n">5</span> E2E 무인 테스트</h2>
+  <p>야간·무인 상황에서 AI에게 테스트를 맡기기 위한 하네스입니다. Playwright 영속 스펙으로 critical path를 실행하고, 실패를 4분류로 트리아지합니다.</p>
+
+  <h3>준비 (최초 1회)</h3>
+<pre><span class="cmd">/whale:e2e-init</span>
+  <span class="c"># 스택 감지(pnpm/npm) → 생성:</span>
+  <span class="c">#   playwright.config.ts</span>
+  <span class="c">#   tests/helpers/{form,dialog,select,table,navigation,toast}.helper.ts</span>
+  <span class="c">#   tests/fixtures/index.ts  (Helper 자동 주입)</span>
+  <span class="c">#   tests/e2e/example.spec.ts</span>
+  <span class="c">#   tests/README.e2e.md      (= AI 가이드)</span>
+  <span class="c">#   .github/workflows/e2e.yml (라벨 기반 CI)</span>
+
+<span class="c"># 의존성 설치는 안내만 (사용자 확인):</span>
+pnpm add -D @playwright/test &amp;&amp; npx playwright install</pre>
+
+  <h3>실행</h3>
+  <p>qa 단계가 critical path를 감지하면 자동 호출하거나, 직접 <span class="cmd">/whale:e2e &lt;시나리오&gt;</span>로 실행합니다.</p>
+
+  <h3>Self-healing 4분류 <span class="chip">핵심</span></h3>
+  <table>
+    <tr><th>분류</th><th>의미</th><th>AI 행동</th></tr>
+    <tr><td><span class="chip b">UI_CHANGE</span></td><td>의도적 UI 변경으로 셀렉터 어긋남</td><td>셀렉터 <b>자가수정</b> (최대 maxHealRetries회)</td></tr>
+    <tr><td><span class="chip b">TEST_BUG</span></td><td>테스트 코드 결함(스코프·대기)</td><td>테스트 <b>자가수정</b></td></tr>
+    <tr><td><span class="chip r">APP_BUG</span></td><td>앱의 실제 결함</td><td><b>고치지 않고 리포트</b> → qa Blocker → 재구현</td></tr>
+    <tr><td><span class="chip w">ENV_ISSUE</span></td><td>서버 미기동·네트워크</td><td><b>고치지 않고 리포트</b></td></tr>
+  </table>
+
+  <div class="note ok">
+    <b>무인 안전.</b> e2e-tester는 앱 코드·마이그레이션·서버를 <b>절대 변경하지 않습니다</b>(E2E 스펙·Helper·리포트만). 파괴적/비가역 시나리오(실데이터 삭제·결제·메일)는 실행하지 않고 스킵합니다.
+  </div>
+
+  <h3>셀렉터 우선순위 (내장 규칙)</h3>
+  <ol>
+    <li><code>getByRole('button', {name:'저장'})</code> — ARIA role (1순위)</li>
+    <li><code>getByLabel('이름')</code> — ARIA 속성 (2순위)</li>
+    <li><code>[data-slot="dialog-title"]</code> — 디자인시스템 (3순위)</li>
+  </ol>
+  <p><b>금지:</b> <code>getByText(/A|B|C/)</code> 다중매칭(strict mode 위반), CSS/XPath 절대경로.</p>
+
+  <h3>결과: 트리아지 리포트 <code>e2e.md</code></h3>
+  <p>진짜 앱버그(APP_BUG)를 크리티컬리티순 최상단에 두어 아침에 5초 안에 판정할 수 있게 합니다.</p>
+</section>
+
+<!-- 6 -->
+<section id="gates">
+  <h2><span class="n">6</span> 강제 게이트 &amp; 보안</h2>
+
+  <h3>Hooks — "권고"를 "강제"로</h3>
+  <p>Whale의 리뷰·QA는 에이전트 "판단"이지만, Hooks는 "무조건 실행"입니다.</p>
+<pre><span class="cmd">/whale:hooks-init</span>
+  <span class="c"># .claude/settings.json 에 병합(덮어쓰기 금지):</span>
+  <span class="c">#  PreToolUse(Bash)      → 위험명령 차단 (exit 2)</span>
+  <span class="c">#  PostToolUse(Edit|Write) → lint·typecheck 게이트 (기본 lint-only)</span></pre>
+  <p><b>기본 차단 명령:</b> <code>rm -rf /~.</code>, 보호브랜치 <code>git push --force</code>, prod 마이그레이션, <code>DROP/TRUNCATE</code>, <code>curl|sh</code>, <code>terraform destroy</code>, <code>kubectl delete namespace</code> 등.</p>
+  <div class="note">게이트 모드: <code>lint-only</code>(기본, 무인 빠름) · <code>full</code>(test 포함) · <code>changed-only</code> · <code>off</code>. 전체 test는 QA 단계에 위임합니다.</div>
+
+  <h3>보안 검토 (security-reviewer)</h3>
+  <p>qa가 보안 민감 변경(인증·PII·site_id·의존성·결제)을 감지하면 <span class="cmd">/whale:security</span>로 호출합니다. 산출물 <code>security.md</code>.</p>
+  <table>
+    <tr><th>축</th><th>점검</th></tr>
+    <tr><td><b>SAST</b></td><td>인젝션·XSS·역직렬화·인증/인가 우회(JWT·RBAC)·시크릿 하드코딩·입력검증·PII 노출·site_id 테넌시</td></tr>
+    <tr><td><b>SCA</b></td><td>신규 패키지 <b>실존 확인</b>(환각/슬롭스쿼팅 방어)·취약버전(CVE)·라이선스·버전 고정</td></tr>
+  </table>
+  <table>
+    <tr><th>판정</th><th>의미</th><th>다음</th></tr>
+    <tr><td><span class="chip r">FAIL</span></td><td>Critical/High 존재 (머지 차단)</td><td>qa Blocker → 재구현 YES</td></tr>
+    <tr><td><span class="chip v">HOLD</span></td><td>인증·암호화·입력검증·결제 변경 (무결점이어도)</td><td><b>리더 보안 승인 대기</b> — 자동 통과 금지</td></tr>
+    <tr><td><span class="chip g">PASS</span></td><td>Critical/High 없음 + 사람게이트 무저촉</td><td>qa 종합 판정 진행</td></tr>
+  </table>
+  <div class="note warn">
+    <b>사람 필수 게이트.</b> 인증·암호화·입력검증·결제 관련 변경은 취약점이 0건이어도 무인 자동 통과되지 않고 <b>HOLD</b>됩니다.
+    공공기관 감사 추적성(누가 언제 보안 승인했는가)을 위한 안전장치입니다.
+  </div>
+
+  <h3>계약 우선 (Contract-first)</h3>
+  <p>레이어 경계마다 "진실은 여기 하나"(SSOT)를 못박아 FE/BE 드리프트를 차단합니다. planner가 <code>config.contracts.ssot</code>/CLAUDE.md §3에 지정하고, be/fe가 준수합니다.</p>
+  <table>
+    <tr><th>경계</th><th>SSOT(원본)</th><th>파생물</th></tr>
+    <tr><td>API</td><td>OpenAPI / BE DTO</td><td>FE 타입·클라이언트</td></tr>
+    <tr><td>DB</td><td>마이그레이션 DDL</td><td>엔티티·타입</td></tr>
+    <tr><td>도메인</td><td>스키마/zod</td><td>FE 모델</td></tr>
+  </table>
+  <p class="note">규칙: SSOT를 바꾸면 <b>같은 커밋에서</b> 파생물을 갱신(가능하면 codegen). 파생물만 손대는 것은 드리프트=금지.</p>
+
+  <h3>교차-run 메모리</h3>
+  <p><code>.claude/whale/memory/</code>에 run 간 학습을 누적합니다.</p>
+  <ul>
+    <li><b>PROGRESS.md</b> — 진행 로그</li>
+    <li><b>DECISIONS.md</b> — 결정 + 이유 (be/fe가 append)</li>
+    <li><b>LessonsLearned.md</b> — 반복 실패 패턴 (reviewer가 append, summarizer가 정리, 다음 researcher가 승계)</li>
+  </ul>
+</section>
+
+<!-- 7 -->
+<section id="modeb">
+  <h2><span class="n">7</span> 이슈 해결(Mode B) &amp; 부채 상환</h2>
+
+  <h3>Mode B — 이슈 해결</h3>
+  <p><span class="cmd">/whale:fix &lt;이슈 설명&gt;</span> — 고정 순서 없이 이슈 성격에 맞는 역할(들)을 피어로 투입합니다. run-id 생애주기와 <b>독립</b>입니다.</p>
+  <ul>
+    <li>API 불일치 → be ↔ fe</li>
+    <li>테스트/품질 의문 → <span class="cmd">/whale:review</span>·<span class="cmd">/whale:qa</span></li>
+    <li>도메인 규칙 의문 → <span class="cmd">/whale:domain</span></li>
+    <li>기능 변경이면 먼저 <span class="cmd">/whale:spec-check</span>로 spec-first 절차 판단</li>
+  </ul>
+
+  <h3>부채 상환 (refactor)</h3>
+  <p><span class="cmd">/whale:refactor [대상]</span> — 생애주기와 <b>독립</b>. 복잡도·중복·대형 모듈을 정리하고 FEATURE.md를 생성합니다.</p>
+  <div class="note ok">
+    <b>동작 불변 강제.</b> 리팩터 전후 <b>동일한 테스트가 동일하게 통과</b>해야 합니다. 기준선이 없으면 특성화 테스트를 먼저 추가합니다.
+    기능 추가·동작 변경은 금지(섞이면 <span class="cmd">/whale:start</span>·<span class="cmd">/whale:fix</span>로). 위험 큰 분해는 제안만 하고 리더 승인 대기.
+  </div>
+</section>
+
+<!-- 8 -->
+<section id="worktree">
+  <h2><span class="n">8</span> 병렬 worktree 오케스트레이션</h2>
+  <p>터미널 여러 개로 병렬 작업할 때 <b>하나의 워킹 디렉토리를 공유해 소스가 섞이는 문제</b>를,
+  작업별 git worktree(폴더·브랜치 물리 격리)로 해결합니다. 각 worktree 폴더에서 터미널을 열면 그 안의 whale 팀은 자기 폴더·자기 브랜치만 봅니다.</p>
+
+  <h3>생성 &amp; 사용</h3>
+<pre><span class="cmd">/whale:worktree create</span> main login payment search notice
+  <span class="c"># ../&lt;repo&gt;-login, -payment, -search, -notice 폴더를</span>
+  <span class="c"># 각각 feature/login … 브랜치로 생성 + 의존성 설치 + .env.worktree(PORT)</span>
+
+<span class="c"># 그다음 각 폴더에서 터미널을 하나씩:</span>
+cd ../&lt;repo&gt;-login   &amp;&amp; claude     <span class="c"># feature/login</span>
+cd ../&lt;repo&gt;-payment &amp;&amp; claude     <span class="c"># feature/payment</span></pre>
+
+  <h3>관리</h3>
+  <table>
+    <tr><th>명령</th><th>동작</th></tr>
+    <tr><td><span class="cmd">/whale:worktree create &lt;base&gt; &lt;name...&gt;</span></td><td>폴더·브랜치 생성 + 의존성 설치 + PORT 분리</td></tr>
+    <tr><td><span class="cmd">/whale:worktree list</span></td><td>현재 worktree 목록 (+PORT)</td></tr>
+    <tr><td><span class="cmd">/whale:worktree remove &lt;name&gt; [--force]</span></td><td>정리 (브랜치는 유지)</td></tr>
+  </table>
+
+  <div class="note">
+    <b>설계.</b> worktree 세팅은 <b>결정적 오케스트레이션</b>이라 command+script 층이 담당하고, 개발 지능은 각 worktree 안의 taskforce 에이전트가 담당합니다(생애주기·run-id와 독립).
+    whale을 <b>유저 레벨(<code>~/.claude/</code>)에 설치</b>하면 갈라진 폴더마다 자동으로 붙습니다.
+  </div>
+
+  <div class="note warn">
+    <b>worktree가 격리하지 못하는 것.</b>
+    <ul>
+      <li><b>의존성/빌드</b>는 폴더마다 따로입니다(pnpm 등 전역 캐시면 부담↓).</li>
+      <li>같은 브랜치를 <b>두 worktree에서 동시 체크아웃 불가</b>(git이 막습니다).</li>
+      <li>로컬 DB/포트는 공유되면 충돌 → <code>.env.worktree</code>의 <code>PORT=3001, 3002…</code>를 참고해 dev 서버를 다르게 띄우세요.</li>
+      <li><b>머지 차단 게이트(테스트·보안 스캔)</b>는 이 층이 아니라 <b>CI</b>(<code>.gitlab-ci.yml</code> 등)에서 강제하세요.</li>
+      <li>새 worktree에 <code>.claude/whale/config.json</code>이 없으면(git 미커밋) 그 폴더에서 <span class="cmd">/whale:init</span>을 먼저 실행하세요.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 9 -->
+<section id="commands">
+  <h2><span class="n">9</span> 명령어 전체</h2>
+
+  <h3>오케스트레이션 (Mode A)</h3>
+  <table>
+    <tr><th>명령어</th><th>설명</th></tr>
+    <tr><td><span class="cmd">/whale:init</span></td><td>프로젝트에 config/state/memory 스캐폴드 (최초 1회)</td></tr>
+    <tr><td><span class="cmd">/whale:start &lt;작업&gt;</span></td><td>생애주기 시작. run-id 발급 → researcher</td></tr>
+    <tr><td><span class="cmd">/whale:next</span></td><td>현재 단계 게이트 검증 → 다음 단계 핸드오프</td></tr>
+    <tr><td><span class="cmd">/whale:approve &lt;run-id&gt; [--reject]</span></td><td>계획 승인 게이트</td></tr>
+    <tr><td><span class="cmd">/whale:status</span></td><td>run-id·phase·승인·재시도 표시</td></tr>
+    <tr><td><span class="cmd">/whale:worktree create|list|remove</span></td><td>병렬 git worktree 생성/조회/정리 (독립층)</td></tr>
+  </table>
+
+  <h3>강제 게이트 / 하네스</h3>
+  <table>
+    <tr><td><span class="cmd">/whale:hooks-init</span></td><td>lint/test 게이트 + 위험명령 차단 훅 스캐폴드</td></tr>
+    <tr><td><span class="cmd">/whale:e2e-init</span></td><td>Playwright E2E 하네스 스캐폴드</td></tr>
+  </table>
+
+  <h3>역할 직접 호출 (온디맨드)</h3>
+  <table>
+    <tr><td><span class="cmd">/whale:research</span></td><td>코드베이스·요구사항 조사</td></tr>
+    <tr><td><span class="cmd">/whale:plan</span></td><td>7섹션 구현계획서 + 승인 게이트</td></tr>
+    <tr><td><span class="cmd">/whale:dba</span> · <span class="cmd">/whale:be</span> · <span class="cmd">/whale:fe</span></td><td>DB / 백엔드 / 프론트엔드 구현</td></tr>
+    <tr><td><span class="cmd">/whale:review</span></td><td>아키텍처·품질 코드리뷰</td></tr>
+    <tr><td><span class="cmd">/whale:qa</span></td><td>테스트·품질·여정 검증</td></tr>
+    <tr><td><span class="cmd">/whale:e2e</span></td><td>Playwright 무인 E2E 실행·트리아지</td></tr>
+    <tr><td><span class="cmd">/whale:security</span></td><td>SAST/SCA 보안 검토·머지 차단 판정</td></tr>
+    <tr><td><span class="cmd">/whale:summarize</span></td><td>작업 결과지(PR 디스크립션)</td></tr>
+    <tr><td><span class="cmd">/whale:refactor</span></td><td>기술부채 상환(동작 불변)</td></tr>
+    <tr><td><span class="cmd">/whale:design</span></td><td>UX/UI 설계(렌즈)</td></tr>
+    <tr><td><span class="cmd">/whale:domain</span></td><td>DDD 도메인 검증(Reviewer 렌즈)</td></tr>
+  </table>
+
+  <h3>이슈 해결 / 문서 / 모니터링</h3>
+  <table>
+    <tr><td><span class="cmd">/whale:fix &lt;이슈&gt;</span></td><td>Mode B 피어 협업</td></tr>
+    <tr><td><span class="cmd">/whale:screen-spec &lt;화면ID&gt;</span></td><td>(선택) 화면 정의서 작성</td></tr>
+    <tr><td><span class="cmd">/whale:spec-check &lt;변경&gt;</span></td><td>spec-first 절차 필요 여부 판단</td></tr>
+    <tr><td><span class="cmd">/whale:ctx</span></td><td>대화 컨텍스트 사용량(토큰 %) 측정·권고</td></tr>
+  </table>
+</section>
+
+<!-- 9 -->
+<section id="agents">
+  <h2><span class="n">10</span> 역할(에이전트) 13개</h2>
+  <table>
+    <tr><th>역할</th><th>단계</th><th>책임</th></tr>
+    <tr><td><b>researcher</b></td><td>research</td><td>코드베이스·요구사항·수정후보 조사(읽기전용). JIT 컨텍스트. 리서치 브리프 R1~R7</td></tr>
+    <tr><td><b>planner</b></td><td>plan</td><td>7섹션 계획서 + 계약 SSOT + <code>APPROVED</code> 승인 요청</td></tr>
+    <tr><td><b>dba</b></td><td>implement</td><td>DB 스키마·ERD·마이그레이션 (행안부 표준·PII·site_id)</td></tr>
+    <tr><td><b>be-developer</b></td><td>implement</td><td>백엔드 TDD·OpenAPI·계약 SSOT 준수</td></tr>
+    <tr><td><b>fe-developer</b></td><td>implement</td><td>프론트 TDD·디자인 토큰·계약 파생 준수</td></tr>
+    <tr><td><b>reviewer</b></td><td>review</td><td>정적분석 先 + 아키텍처·품질 + 부분수정 탐지. YES/NO 판정</td></tr>
+    <tr><td><b>qa</b></td><td>qa</td><td>AC·회귀·여정 커버리지. E2E·보안 조건부 호출. Go/No-Go</td></tr>
+    <tr><td><b>e2e-tester</b></td><td>qa 종속</td><td>Playwright 무인 실행·4분류 트리아지·self-healing</td></tr>
+    <tr><td><b>security-reviewer</b></td><td>qa 종속</td><td>SAST+SCA·환각패키지·사람게이트·머지차단</td></tr>
+    <tr><td><b>summarizer</b></td><td>summarize</td><td>작업 결과지·메모리(DECISIONS/LessonsLearned) 최신화</td></tr>
+    <tr><td><b>refactor</b></td><td>독립</td><td>부채 상환(동작 불변)·FEATURE.md 생성</td></tr>
+    <tr><td><b>designer</b></td><td>렌즈</td><td>신규 화면 UX/UI 설계</td></tr>
+    <tr><td><b>domain-expert</b></td><td>렌즈</td><td>전술 DDD 경계·규칙·용어 드리프트 검증</td></tr>
+  </table>
+</section>
+
+<!-- 10 -->
+<section id="config">
+  <h2><span class="n">11</span> 설정 (<code>.claude/whale/config.json</code>)</h2>
+  <p>플러그인은 손대지 않고 <b>프로젝트 로컬 config.json만</b> 수정합니다.</p>
+  <table>
+    <tr><th>키</th><th>용도</th></tr>
+    <tr><td><code>profile</code></td><td>도메인 특화 강도 — <code>domain</code>(general 기본 / public-sector-kr) · <code>multitenant</code>(site_id) · <code>architecture</code>(project, 내장 강제 없음)</td></tr>
+    <tr><td><code>lifecycle.phases</code></td><td>생애주기 단계 구성(id·role·gate·produces)</td></tr>
+    <tr><td><code>domainExperts</code></td><td>implement가 부르는 전문가(order·roles)</td></tr>
+    <tr><td><code>approvalGate</code></td><td>승인 문구 규칙(<code>APPROVED: {runId}</code>, acceptLoose=false)</td></tr>
+    <tr><td><code>feedbackLoop</code></td><td>재시도 상한(maxRetries=1)·복귀 대상·범위</td></tr>
+    <tr><td><code>roles</code></td><td>역할 → agentType 매핑</td></tr>
+    <tr><td><code>runId</code></td><td>run-id 형식(티켓 체계 등 커스터마이즈)</td></tr>
+    <tr><td><code>e2e</code></td><td>E2E 설정(testDir·runCommand·maxHealRetries·criticalPaths·runOn)</td></tr>
+    <tr><td><code>security</code></td><td>보안(sast·sca·humanGateAreas·failOn·runOn) — 없으면 미사용</td></tr>
+    <tr><td><code>refactor</code></td><td>부채 임계·리포트 경로·주기</td></tr>
+    <tr><td><code>contracts.ssot</code></td><td>계약 경계별 원본·파생물·codegen</td></tr>
+    <tr><td><code>coverage</code></td><td>qa 여정 지표(journeys·검증밀도·깨진테스트율)</td></tr>
+    <tr><td><code>hooks</code></td><td>guard(위험명령)·gate(lint/test mode)</td></tr>
+    <tr><td><code>paths.*</code></td><td>runArtifacts·메모리·CLAUDE.md·FEATURE.md·(선택) 화면정의서·PRD</td></tr>
+    <tr><td><code>reviewer</code></td><td>최종 검수자</td></tr>
+  </table>
+  <div class="note">
+    <b>하위호환.</b> <code>lifecycle</code>이 없고 <code>modeA_chain</code>만 있는 구버전 config는 구 4역할 체인(dba→be→fe→qa)으로 동작합니다.
+    새 기능을 쓰려면 <span class="cmd">/whale:init</span> 재실행 또는 config를 v2 스키마로 갱신하세요.
+  </div>
+</section>
+
+<!-- 11 -->
+<section id="artifacts">
+  <h2><span class="n">12</span> 산출물 파일</h2>
+  <p>모든 단계 산출물은 <code>.claude/whale/runs/&lt;run-id&gt;/</code>에 파일로 남습니다(컨텍스트 격리 + 게이트 검증용).</p>
+  <table>
+    <tr><th>파일</th><th>작성자</th><th>핵심 내용</th></tr>
+    <tr><td><code>research.md</code></td><td>researcher</td><td>R1~R7 (요구사항·코드지도·계약·수정후보·리스크)</td></tr>
+    <tr><td><code>plan.md</code></td><td>planner</td><td>P1~P7 구현계획 + APPROVAL GATE</td></tr>
+    <tr><td><code>review.md</code></td><td>reviewer</td><td>발견사항·VERDICT(재구현 YES/NO)</td></tr>
+    <tr><td><code>qa.md</code></td><td>qa</td><td>AC 매트릭스·여정 커버리지·VERDICT</td></tr>
+    <tr><td><code>e2e.md</code></td><td>e2e-tester</td><td>트리아지 리포트(APP_BUG·healed·스킵)</td></tr>
+    <tr><td><code>security.md</code></td><td>security-reviewer</td><td>SAST/SCA·사람게이트·FAIL/HOLD/PASS</td></tr>
+    <tr><td><code>summary.md</code></td><td>summarizer</td><td>작업 결과지 = PR 디스크립션</td></tr>
+  </table>
+  <p>부채 리포트는 <code>.claude/whale/debt/&lt;date&gt;-refactor.md</code>, 메모리는 <code>.claude/whale/memory/</code>에 별도 축적됩니다.</p>
+</section>
+
+<!-- 12 -->
+<section id="faq">
+  <h2><span class="n">13</span> FAQ · 트러블슈팅</h2>
+
+  <h4>Q. <span class="cmd">/whale:next</span>가 "승인 대기"로 멈춰요.</h4>
+  <p>approve 게이트입니다. <span class="cmd">/whale:approve &lt;run-id&gt;</span>를 실행하세요. "ok"·"진행해" 같은 표현은 인정되지 않습니다.</p>
+
+  <h4>Q. 재구현이 반복돼서 멈췄어요.</h4>
+  <p>피드백 루프는 <b>최대 1회</b>입니다. 초과하면 자동 진행이 멈추고 리더 개입을 요청합니다. 직접 수정하거나 <span class="cmd">/whale:approve --reject</span>로 재계획하세요.</p>
+
+  <h4>Q. qa가 "리더 보안 승인 대기(HOLD)"라고 해요.</h4>
+  <p>인증·암호화·입력검증·결제 변경은 무결점이어도 자동 통과되지 않습니다. <code>security.md</code>를 확인하고 사람이 명시 승인해야 진행됩니다.</p>
+
+  <h4>Q. E2E/보안을 안 쓰고 싶어요.</h4>
+  <p>config.json에서 <code>e2e</code>/<code>security</code> 블록을 비우거나 제거하면 됩니다. qa는 커버리지 공백을 표기하고 그냥 진행합니다.</p>
+
+  <h4>Q. 공공기관 프로젝트가 아닌데 행안부 표준·site_id가 강제되나요?</h4>
+  <p>아니요. 기본은 <code>profile.domain=general</code>·<code>multitenant=false</code>라 <b>행안부 표준·PII 암호화·site_id는 전혀 적용되지 않습니다</b>(dba의 부록 A는 무시됨). 공공기관 프로젝트일 때만 <code>config.profile</code>에서 켜세요. 아키텍처도 whale이 강제하지 않고 프로젝트 CLAUDE.md가 결정합니다.</p>
+
+  <h4>Q. worktree를 슬래시 없이 자동으로 만들 수 있나요?</h4>
+  <p>네. 여러 기능/도메인을 병렬로 진행하려는 신호가 보이면 Claude가 worktree 세팅을 <b>제안·실행</b>합니다(폴더·의존성 설치 부작용이 있어 확인 후 실행). 슬래시 커맨드는 수동 진입점일 뿐이고, 내부적으로 <code>whale-worktree.sh</code>를 실행합니다.</p>
+
+  <h4>Q. Hooks가 정상 명령까지 막아요.</h4>
+  <p>가드는 파괴적 패턴만 <code>exit 2</code>로 막습니다. 의도한 위험 작업이면 사람이 터미널에서 직접 실행하세요(<span class="kbd">! 명령</span>). 오탐이면 <code>config.hooks.guard.blockPatterns</code>를 조정하세요.</p>
+
+  <h4>Q. refactor가 기능을 못 고친다는데요?</h4>
+  <p>맞습니다. refactor는 <b>동작 불변</b>만 합니다. 기능 변경은 <span class="cmd">/whale:start</span>(신규) 또는 <span class="cmd">/whale:fix</span>(이슈)로 진행하세요.</p>
+
+  <h4>Q. 매번 <code>/whale:*</code>를 쳐야 하나요?</h4>
+  <p>아니요. 내장 Output Style(<code>force-for-plugin</code>)과 CLAUDE.md 라우팅이 개발 요청을 자동으로 whale 흐름으로 보냅니다("2. 슬래시 없이 자동 사용" 참고). 단 <b>승인 게이트</b>는 유지되므로 계획 후 승인은 직접 해주세요. Output Style 변경은 <span class="cmd">/reload</span> 후 반영됩니다.</p>
+
+  <h4>Q. 자동으로 안 도는데요?</h4>
+  <p>Claude Code에 강제 자동 위임은 없어(모델이 판단) 가끔 안 탈 수 있습니다. <span class="cmd">/output-style</span>로 whale 스타일이 켜졌는지 확인하고, 확실히 태우려면 <span class="cmd">/whale:start &lt;작업&gt;</span>으로 시작하세요.</p>
+
+  <h4>Q. 다른 프로젝트에서도 쓰려면?</h4>
+  <p>플러그인은 그대로 두고 각 프로젝트에서 <span class="cmd">/whale:init</span> 한 번 실행 후 config.json·CLAUDE.md만 그 프로젝트에 맞게 채우면 됩니다. 전역 <code>~/.claude/CLAUDE.md</code>의 whale 라우팅 블록은 모든 프로젝트에 적용됩니다.</p>
+
+  <h4>Q. <span class="cmd">/whale:worktree remove</span>가 안 돼요.</h4>
+  <p>해당 worktree에 커밋 안 된 변경이 있으면 안전하게 거부됩니다. 작업을 커밋/스태시하거나, 버릴 거면 <code>remove &lt;name&gt; --force</code>를 쓰세요. 브랜치는 자동 삭제되지 않으니 머지 후 <code>git branch -d</code>로 지우면 됩니다.</p>
+
+  <h4>Q. 새 worktree에서 dev 서버가 포트 충돌해요.</h4>
+  <p>worktree는 폴더·브랜치만 격리합니다. 생성 시 만든 <code>.env.worktree</code>의 <code>PORT</code>(3001, 3002…)를 프로젝트 방식으로 로드해 서버를 다르게 띄우세요.</p>
+</section>
+
+</div>
+
+<div class="footer">
+  🐳 Whale v2.1.0 · 생애주기 품질 루프 + 무인 E2E + 보안/강제 게이트 + 병렬 worktree · MIT License<br>
+  이 매뉴얼은 <code>docs/manual.html</code>에 있으며 브라우저로 바로 열 수 있습니다.
+</div>
+</main>
+</div>
+
+<script>
+// scrollspy: 사이드바 활성 표시
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+  var secs = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 120, idx = 0;
+    for(var i=0;i<secs.length;i++){ if(secs[i] && secs[i].offsetTop <= y) idx = i; }
+    links.forEach(function(l){ l.classList.remove('active'); });
+    if(links[idx]) links[idx].classList.add('active');
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

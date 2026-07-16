@@ -1,0 +1,45 @@
+# whale E2E — CI 라벨 기반 선택 실행
+# /whale:e2e-init 이 프로젝트 .github/workflows/e2e.yml 로 복사(존재 시 덮어쓰지 않음).
+# 모든 PR 에 실행하지 않고, PR 에 e2e 또는 release 라벨이 붙었을 때만 실행한다.
+# (라벨 규칙은 config.e2e.runOn.ciLabels 와 아래 if 를 함께 수정해야 한다.)
+# 야간 cron(on: schedule)은 의도적으로 두지 않는다.
+name: whale-e2e
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  e2e:
+    if: github.event.label.name == 'e2e' || github.event.label.name == 'release'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # 패키지 매니저는 프로젝트에 맞춰 조정(pnpm 예시)
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: npx playwright install --with-deps
+
+      - name: Run E2E (critical paths)
+        run: pnpm playwright test        # config.e2e.runCommand 와 동일하게
+        env:
+          E2E_BASE_URL: ${{ secrets.E2E_BASE_URL }}
+
+      - name: Upload trace/report (트리아지 근거)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            test-results/
+
+      # 트리아지 요약을 PR 코멘트/메신저로 게시하는 스텁 — 프로젝트 웹훅에 연결
+      - name: Report triage summary
+        if: always()
+        run: echo "E2E 트리아지 요약(통과 x/y, APP_BUG n)을 PR 코멘트/Slack 으로 게시하도록 연결하세요."

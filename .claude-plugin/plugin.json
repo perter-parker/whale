@@ -1,7 +1,7 @@
 {
   "name": "whale",
-  "description": "역할 기반 에이전트 팀(dba·be·fe·qa + planner·designer·domain-expert)을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크. 자동 체인(Mode A)·피어 협업(Mode B)·화면정의서/설계서 산출을 슬래시 명령어로 구동한다.",
-  "version": "1.0.1",
+  "description": "작업 한 건의 생애주기 품질 루프(researcher→planner→[승인]→implementer(dba/be/fe)→reviewer→qa→[재구현 루프]→summarizer)를 슬래시 명령어로 오케스트레이션하는 워크플로 프레임워크. run-id 승인 게이트·컨텍스트 격리·피드백 루프·기록 강제 + Playwright 무인 E2E 트리아지 + 보안 게이트(SAST/SCA)·강제 Hooks·계약 우선·교차-run 메모리·부채 상환 + 병렬 worktree 오케스트레이션을 갖춘 범용 에이전트 팀(공공기관 프로필 옵션).",
+  "version": "2.1.0",
   "author": {
     "name": "pss",
     "email": "parkss@daonplace.com"
@@ -15,6 +15,17 @@
     "orchestration",
     "ddd",
     "korean",
-    "public-sector"
+    "public-sector",
+    "e2e",
+    "playwright",
+    "testing",
+    "security",
+    "sast",
+    "sca",
+    "hooks",
+    "refactor",
+    "contract-first",
+    "worktree",
+    "parallel"
   ]
 }
