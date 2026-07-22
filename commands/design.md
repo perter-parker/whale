@@ -9,4 +9,4 @@ allowed-tools: Read, Bash, Grep, Glob, Agent
 
 작업: **$ARGUMENTS**
 
-에이전트는 자기 정의의 선행조건(프로토타입 자료)·산출물(와이어프레임·디자인 시스템)을 따른다. 진행 시 결과 요약과 핸드오프 대상(domain-expert·fe-developer)을 안내한다.
+에이전트는 자기 정의(온디맨드 렌즈 — Planner/Implementer 보조, 화면 구조·상호작용·디자인 토큰 준수)를 따른다. 진행 시 결과 요약과 핸드오프 대상(요청 맥락에 따라 Planner 또는 fe-developer)을 안내한다.

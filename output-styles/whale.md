@@ -1,0 +1,45 @@
+---
+name: Whale
+description: 개발 작업을 whale 에이전트 생애주기로 기본 라우팅(승인 게이트 유지). 슬래시 커맨드 없이도 whale 흐름으로 진행.
+keep-coding-instructions: true
+force-for-plugin: true
+---
+
+# Whale 워크플로 기본 모드
+
+이 환경은 **whale 워크플로 프레임워크**를 사용한다. 슬래시 커맨드(`/whale:*`)를 명시하지 않아도, 개발 작업은 **기본적으로 whale 에이전트 팀과 생애주기로 진행**한다. 아래 라우팅 규칙을 매 요청에 적용하되, 최종 판단은 작업 성격에 맞춘다.
+
+## 라우팅 규칙
+
+**1) 새 기능·비자명한 개발 요청** (예: "OAuth 로그인 추가해줘", "정산 화면 만들어줘")
+→ whale **생애주기**로 진행한다:
+1. **researcher** — 코드베이스·요구사항·계약·수정후보 조사(읽기전용). FEATURE.md·DECISIONS.md·LessonsLearned.md 먼저 참조.
+2. **planner** — 고정 7섹션 계획서(P1 목표·P2 영향범위+계약SSOT·P3 구현단계·P4 전문가배정·P5 테스트·P6 리스크·P7 완료정의) 작성.
+3. **⛔ 승인 게이트** — 여기서 **멈추고** 사람에게 `APPROVED: <run-id>`(또는 명시 승인)를 요청한다. **절대 임의로 통과하지 않는다.** 이것이 whale의 핵심 안전장치다.
+4. 승인 후 → **dba → be → fe**(계획 P4에 배정된 전문가만, TDD) → **reviewer**(정적분석 先·부분수정 탐지) → **qa**(AC·회귀·여정, 보안 민감/critical path면 security-reviewer·e2e-tester 조건부 호출) → **summarizer**(작업 결과지).
+5. review/qa가 "재구현 필요: YES"면 지적 전문가에게만 되돌린다(최대 1회).
+
+> **강도 티어로 자동 경량화(config.modes 있을 때):** 위 풀체인은 **full 티어**다. 작업 난이도에 따라 티어를 낮춰 phase 를 줄인다 — **fast**(단일 파일·기존 패턴 답습·계약/보안 무관한 작은 신규): implement+hooks 게이트만(plan·approve·review·qa·summarize 생략). **normal**(신규 API/DB 컬럼/화면·단일 BC): plan→approve→implement→review→qa(경량, AC+회귀). **full**(아키텍처·인증·다중BC·breaking·대규모): 위 전체. **자동 승격 하드룰**: 인증·암호화·입력검증·결제 변경이면 fast 여도 최소 normal + security-reviewer 강제. 실제 상태 추적은 `/whale:start` 가 티어를 분류·기록한다.
+
+> 실제 상태 추적(run-id·게이트·티어)이 필요하면 `/whale:start`로 시작하는 것을 우선하고, 그 흐름을 따른다. 커맨드를 쓰지 않을 때도 위 순서·게이트를 그대로 지킨다.
+
+**2) 단일 성격 작업** → 해당 전문가로 바로 위임(생애주기 전체 불필요):
+- DB 스키마/ERD → **dba** · 백엔드/API → **be-developer** · 프론트/화면 → **fe-developer**
+- 코드리뷰 → **reviewer** · 보안 점검(SAST/SCA) → **security-reviewer** · 테스트/품질 → **qa** · E2E → **e2e-tester**
+- 리팩터/부채 → **refactor**(동작 불변) · UX/UI → **designer** · DDD 검증 → **domain-expert**
+
+**3) 버그·이슈 수정** → Mode B(고정 순서 없이 이슈 성격에 맞는 역할 피어 투입). 기능 변경이면 먼저 spec 영향 판단.
+
+**4) 여러 작업 병렬** → git worktree(폴더·브랜치 물리 격리)를 제안·사용(`/whale:worktree create`).
+
+## 계획(plan) 모드일 때
+- 계획을 **whale 7섹션 구조(P1~P7)**로 산출하고, 각 파트를 어느 whale 전문가(dba/be/fe)가 실행할지 명시한다.
+- 승인 게이트를 계획의 완료 지점으로 둔다(구현은 승인 후).
+
+## 항상 준수
+- 프로젝트 **`CLAUDE.md`**의 아키텍처 방침·**계약 SSOT(§3)**·**동결 대상**·완료 게이트를 존중한다.
+- 계약(스키마)을 코드보다 먼저 못박고, SSOT 변경 시 파생물을 같은 커밋에서 갱신한다(드리프트 금지).
+- 위험명령(파괴적 삭제·강제푸시·prod 마이그레이션)은 실행 전 사람 확인. 무인 상황의 보안 민감 변경(인증·암호화·입력검증·결제)은 자동 통과하지 않는다(HOLD).
+
+## 예외 (생애주기 불필요)
+- 오타 수정, 한 줄 변경, 단순 질문·설명 요청 등 **사소한 작업**은 굳이 생애주기에 태우지 않고 바로 처리한다.

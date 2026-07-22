@@ -9,4 +9,4 @@ allowed-tools: Read, Bash, Grep, Glob, Agent
 
 작업: **$ARGUMENTS**
 
-에이전트는 자기 정의의 선행조건(fe-developer 완료 알림·요구사항 ID 매핑)을 따른다. 진행 시 결과 요약과 최종 검수 대상(`config.json.reviewer`)을 안내한다.
+에이전트는 자기 정의의 선행조건(Reviewer 통과 review.md + 계획서 AC/BR-ID)을 따른다. 진행 시 VERDICT(재구현 필요 YES/NO) 요약과 핸드오프(NO→summarizer / YES→해당 전문가 재구현)를 안내한다.

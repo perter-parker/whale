@@ -9,8 +9,11 @@
   "plugins": [
     {
       "name": "whale",
-      "source": "./",
-      "description": "역할 기반 에이전트 팀을 슬래시 명령어로 오케스트레이션하는 경량 워크플로 프레임워크",
+      "source": {
+        "source": "github",
+        "repo": "perter-parker/whale"
+      },
+      "description": "작업 생애주기 품질 루프(연구→계획→[승인]→구현→리뷰→QA→[루프]→요약)를 슬래시 명령어로 오케스트레이션하는 워크플로 프레임워크",
       "category": "workflow"
     }
   ]

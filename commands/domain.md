@@ -9,4 +9,4 @@ allowed-tools: Read, Bash, Grep, Glob, Agent
 
 작업: **$ARGUMENTS**
 
-에이전트는 자기 정의의 선행조건(프로토타입·기획 문서)을 따른다. domain-expert 는 경계를 *창작*하지 않고 *검증*하는 온디맨드 최종 리뷰어다. 진행 시 결과 요약과 핸드오프 대상(dba)을 안내한다.
+에이전트는 자기 정의를 따른다. domain-expert 는 경계를 *창작*하지 않고 *검증*하는 온디맨드 Reviewer 렌즈다(전술 DDD 승인 모듈의 경계·규칙·용어 드리프트 검증). 진행 시 결과 요약과 함께, Reviewer 연동이면 그 판정에 반영하도록 안내한다.
