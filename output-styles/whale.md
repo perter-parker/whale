@@ -19,7 +19,9 @@ force-for-plugin: true
 4. 승인 후 → **dba → be → fe**(계획 P4에 배정된 전문가만, TDD) → **reviewer**(정적분석 先·부분수정 탐지) → **qa**(AC·회귀·여정, 보안 민감/critical path면 security-reviewer·e2e-tester 조건부 호출) → **summarizer**(작업 결과지).
 5. review/qa가 "재구현 필요: YES"면 지적 전문가에게만 되돌린다(최대 1회).
 
-> 실제 상태 추적(run-id·게이트)이 필요하면 `/whale:start`로 시작하는 것을 우선하고, 그 흐름을 따른다. 커맨드를 쓰지 않을 때도 위 순서·게이트를 그대로 지킨다.
+> **강도 티어로 자동 경량화(config.modes 있을 때):** 위 풀체인은 **full 티어**다. 작업 난이도에 따라 티어를 낮춰 phase 를 줄인다 — **fast**(단일 파일·기존 패턴 답습·계약/보안 무관한 작은 신규): implement+hooks 게이트만(plan·approve·review·qa·summarize 생략). **normal**(신규 API/DB 컬럼/화면·단일 BC): plan→approve→implement→review→qa(경량, AC+회귀). **full**(아키텍처·인증·다중BC·breaking·대규모): 위 전체. **자동 승격 하드룰**: 인증·암호화·입력검증·결제 변경이면 fast 여도 최소 normal + security-reviewer 강제. 실제 상태 추적은 `/whale:start` 가 티어를 분류·기록한다.
+
+> 실제 상태 추적(run-id·게이트·티어)이 필요하면 `/whale:start`로 시작하는 것을 우선하고, 그 흐름을 따른다. 커맨드를 쓰지 않을 때도 위 순서·게이트를 그대로 지킨다.
 
 **2) 단일 성격 작업** → 해당 전문가로 바로 위임(생애주기 전체 불필요):
 - DB 스키마/ERD → **dba** · 백엔드/API → **be-developer** · 프론트/화면 → **fe-developer**

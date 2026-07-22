@@ -17,4 +17,6 @@ allowed-tools: Read, Bash(ls:*), Bash(cat:*), Bash(git:*), Grep, Glob, Agent
 3. **피어 투입:** Mode B 는 고정 순서가 없다. `config.json.roles` 에서 적합한 역할(들)을 골라 agentType 으로 Agent 툴 dispatch 한다. 예: API 불일치 → be-developer↔fe-developer, 테스트/품질 의문 → `/whale:review`·`/whale:qa`, 도메인 규칙 의문 → `/whale:domain`(Reviewer 렌즈), 기획·화면 의문 → `/whale:plan`·`/whale:design`. 생애주기 루프의 어느 역할이든 Mode B 에선 필요 시 호출한다.
 4. **재검증 판단:** 수정 영향 범위가 크면 `/whale:review`·`/whale:qa` 재검증이 필요한지 결정.
 
+> **Fast 티어와의 경계:** `/whale:fix`(Mode B)는 **버그·이슈** 를 고정 순서 없이 피어로 수정한다(run-id 없음). 이와 달리 **작은 "신규" 변경**(기존 패턴 답습, 계약·보안 무관)은 `/whale:start` 가 **Fast 티어**(생애주기-경량: implement+hooks)로 처리한다 — run-id 를 발급하고 히스토리에 남긴다. 오타·1줄은 어느 쪽도 아니고 곧장 처리한다. 헷갈리면: 고장난 걸 고치면 Mode B, 작은 걸 새로 만들면 Fast 티어.
+
 **규칙:** Mode B 는 run-id 생애주기(Mode A)와 **독립**이다 — state.md 의 활성 phase 를 진행시키지 않고, run-id 를 발급하지 않는다(히스토리에 run 으로 기록되지 않음). 단 활성 run 이 진행 중일 때 Mode B 수정이 그 구현(산출물)에 영향을 주면, "이 수정이 활성 run `<run-id>` 의 구현에 영향 → 해당 run 을 implement 로 되돌릴지 리더 확인" 을 안내한다. 버그픽스·리팩토링은 spec 갱신 불필요할 수 있으나, 기능 변경이면 2번을 반드시 거친다.

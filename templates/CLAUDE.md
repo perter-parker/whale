@@ -9,9 +9,10 @@
 
 이 프로젝트의 개발은 **기본적으로 whale 에이전트 생애주기로 진행**한다. 슬래시 커맨드를 명시하지 않아도 아래를 따른다:
 
-- **새 기능·비자명한 개발 요청** → whale 생애주기: **researcher → planner → ⛔승인 게이트(사람이 `APPROVED` 명시) → dba/be/fe(TDD) → reviewer → qa(+조건부 e2e·security) → summarizer.** 계획 후 승인 게이트에서 반드시 멈춘다(임의 통과 금지).
+- **새 기능·비자명한 개발 요청** → whale 생애주기: **researcher → planner → ⛔승인 게이트(사람이 `APPROVED` 명시) → dba/be/fe(TDD) → reviewer → qa(+조건부 e2e·security) → summarizer.** 계획 후 승인 게이트에서 반드시 멈춘다(임의 통과 금지). **이 풀체인 = full 티어.**
+- **강도 티어 자동 경량화**(`config.modes`): 작업 난이도에 따라 phase 를 줄인다 — **fast**(단일 파일·기존 패턴 답습·계약/보안 무관한 작은 신규): implement+hooks 게이트만 / **normal**(신규 API·DB 컬럼·화면·단일 BC): plan→approve→implement→review→qa(경량) / **full**(아키텍처·인증·다중BC·breaking·대규모): 위 전체. **승격 하드룰**: 인증·암호화·입력검증·결제 변경이면 fast 여도 **최소 normal + security-reviewer 강제**. `/whale:start` 가 티어를 분류·기록한다.
 - **단일 성격 작업** → 해당 전문가로 바로: DB=dba · 백엔드=be · 프론트=fe · 리뷰=reviewer · 보안=security-reviewer · 테스트=qa/e2e-tester · 리팩터=refactor.
-- **버그·이슈** → Mode B(피어). **여러 기능/도메인을 병렬로 진행** → git worktree 물리 격리를 먼저 제안·세팅(`/whale:worktree create` 또는 `whale-worktree.sh`). 폴더·의존성 설치 부작용이 있으니 사용자 확인 후 실행.
+- **버그·이슈** → Mode B(피어, `/whale:fix`). 작은 **신규** 변경은 Fast 티어(`/whale:start`). **여러 기능/도메인을 병렬로 진행** → git worktree 물리 격리를 먼저 제안·세팅(`/whale:worktree create` 또는 `whale-worktree.sh`). 폴더·의존성 설치 부작용이 있으니 사용자 확인 후 실행.
 - **사소한 작업**(오타·1줄·질문)은 생애주기 없이 바로.
 - **plan 모드**에서는 계획을 whale 7섹션(P1~P7) 구조로 산출하고 각 파트의 실행 전문가를 명시한다.
 

@@ -22,15 +22,24 @@ tools: Read, Write, Bash, Grep, Glob
 - [ ] (critical path 있으면) `config.e2e` 설정·E2E 하네스 존재 확인 (없으면 E2E 커버리지 공백으로 표기하고 진행)
 - [ ] (보안 민감 변경이면) `config.security` 설정 확인 (없으면 보안 커버리지 공백으로 표기하고 진행)
 
+## QA 프로파일 (강도 티어 연동 — 먼저 확정)
+
+> `config.modes.tiers[현재 tier].qaProfile` 로 검증 강도가 갈린다(state.md 의 `Tier` 확인). `config.qaProfiles` 정의를 따른다. `modes` 미설정 프로젝트는 항상 `full` 로 간주(하위호환).
+
+- **`light`** (normal 티어 기본): **AC 판정 + 회귀 검증만** 수행한다. 여정 커버리지 매트릭스·PR 검증밀도·계약 테스트는 **생략**(qaProfiles.light.journeyMatrix/contractTests=false). e2e·security 는 여전히 조건 충족 시 dispatch(보안 하드룰은 티어 무관하게 항상 적용). 목적: 소~중 규모 작업의 QA 구간을 가볍게.
+- **`full`** (full 티어): 아래 책임 **전부** 수행(여정 매트릭스·계약 테스트 포함). 조건부 검토(e2e·security)는 **병렬 dispatch**(아래 규칙).
+- 어떤 티어든 **보안 자동 승격 하드룰**(humanGateAreas 저촉)은 절대 생략하지 않는다 — light 여도 보안 민감 변경이면 security-reviewer 를 부른다.
+
 ## 책임
 
-- **요구사항 완성도 검증**: 화면정의서의 AC 를 하나씩 PASS/FAIL 로 판정
-- **비즈니스 규칙 검증**: BR-ID 별 테스트 존재·통과 여부 매핑
-- **회귀 검증**: 기존 도메인·동결 코드 무손상 확인 (BE/FE 테스트 스위트 실행)
+- **요구사항 완성도 검증**: 화면정의서의 AC 를 하나씩 PASS/FAIL 로 판정 (light·full 공통)
+- **비즈니스 규칙 검증**: BR-ID 별 테스트 존재·통과 여부 매핑 (light·full 공통)
+- **회귀 검증**: 기존 도메인·동결 코드 무손상 확인 (BE/FE 테스트 스위트 실행) (light·full 공통)
 - **경계·예외·권한(RBAC)** 시나리오 점검
+- **조건부 검토(e2e·security)는 병렬 실행**: e2e-tester 와 security-reviewer 를 **둘 다** 부를 조건이면, **같은 응답 메시지에서 두 Agent 를 동시에 dispatch**(순차 금지 — 무인 QA 구간 지연 최소화). 하나만 해당하면 그 하나만. 두 리포트(e2e.md·security.md)가 돌아오면 각 VERDICT 를 아래 규칙대로 qa.md 에 흡수한다.
 - **E2E 검증(조건부)**: critical path/메인 기능이 있으면 e2e-tester(`config.roles.e2e`)를 dispatch 해 **무인 E2E 실행**. `runs/<run-id>/e2e.md` 의 **APP_BUG(Blocker)를 QA 버그 목록·VERDICT 에 흡수**(처리 전문가 추정을 계승). ENV_ISSUE 로 실행 불가면 그 사유를 판정에 명시. `config.e2e` 미설정이면 `/whale:e2e-init` 미실행으로 보고하고 **E2E 없이 진행하되 커버리지 공백을 표기**. 비메인은 e2e-tester 의 스킵 판정을 존중.
 - **보안 검증(조건부)**: 이번 변경이 보안 민감(인증/인가·민감정보·입력검증·신규 의존성·결제)하면 security-reviewer(`config.roles.security`)를 dispatch 해 SAST/SCA 검토. `runs/<run-id>/security.md` 의 **Critical/High 를 QA Blocker 로 승격**(처리 전문가 추정 계승) → 재구현 필요 YES. **사람 필수 게이트(config.security.humanGateAreas: 인증·암호화·입력검증·결제) 저촉이면 HOLD** — Go 로 넘기지 않고 **리더 보안 승인 대기**로 판정한다(무인 야간이라도 자동 통과 금지). `config.security` 미설정이면 보안 커버리지 공백을 표기하고 진행.
-- **여정 커버리지 지표(테스트 개수 대체)**: 테스트 "개수"가 아니라 **유저 여정이 실제로 검증되는가**로 측정한다.
+- **여정 커버리지 지표(테스트 개수 대체 — `full` 프로파일에서만)**: 테스트 "개수"가 아니라 **유저 여정이 실제로 검증되는가**로 측정한다. (`light` 프로파일은 이 블록 전체 생략.)
   - **유저 여정 도달률**: `config.coverage.journeys` 각 여정이 테스트/E2E 로 끝까지 도달하는 비율.
   - **PR 검증밀도**: 변경 단위(파일/함수)당 이를 커버하는 검증(테스트/AC/계약테스트) 수. `config.coverage.prVerificationDensityMin` 하한 대조.
   - **깨진 테스트율**: 전체 대비 실패/skip 비율. `config.coverage.brokenTestRateMax` 상한 대조.
@@ -84,7 +93,8 @@ tools: Read, Write, Bash, Grep, Glob
 - [ ] BE/FE 테스트 스위트 실행 결과 첨부, 회귀 여부 명시
 - [ ] (E2E 실행 시) e2e.md 의 APP_BUG 가 QA 버그 목록·VERDICT 에 누락 없이 반영
 - [ ] (Security 실행 시) security.md 의 Critical/High 가 QA Blocker·VERDICT 에 반영, HOLD 면 리더 승인 대기로 표기
-- [ ] 여정 도달률·검증밀도·계약테스트 결과 산출
+- [ ] (e2e·security 를 둘 다 부른 경우) 같은 응답에서 병렬 dispatch 했는지 확인(순차 아님)
+- [ ] (`full` 프로파일만) 여정 도달률·검증밀도·계약테스트 결과 산출 — `light` 는 AC+회귀로 충분
 - [ ] Blocker 유무에 따른 판정 근거 명확
 
 ## 완료 조건

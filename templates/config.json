@@ -24,6 +24,29 @@
     "_phases_note": "gate: artifact=산출물 파일 존재+내용 검증 / approval=사람의 'APPROVED: <run-id>' 명시 필요 / verdict='재구현 필요: YES/NO' 판정 필요. role=null 은 phase 자체가 게이트(approve) 또는 dispatch 컨테이너(implement=도메인 전문가 순차 dispatch). produces 는 paths.runArtifacts/<run-id>/ 하위 파일명."
   },
 
+  "modes": {
+    "enabled": true,
+    "default": "normal",
+    "classify": "auto",
+    "tiers": {
+      "fast":   { "phases": ["implement"], "qaProfile": null },
+      "normal": { "phases": ["plan", "approve", "implement", "review", "qa"], "qaProfile": "light" },
+      "full":   { "phases": ["research", "plan", "approve", "implement", "review", "qa", "summarize"], "qaProfile": "full" }
+    },
+    "autoEscalate": {
+      "toNormalMin": ["authentication", "encryption", "input-validation", "payment"],
+      "toFull": ["architecture-change", "auth-change", "cross-bc", "contract-breaking", "frozen-target"]
+    },
+    "_note": "작업 강도 티어(Mode A/B 와 직교하는 별개 차원). start 가 작업을 fast|normal|full 로 분류(classify=auto, 사용자가 --tier 로 override 가능)하고, 각 티어의 phases 배열이 lifecycle.phases 중 실제로 돌 phase 부분집합을 고른다(lifecycle.phases 는 phase 정의 superset 으로 유지). qaProfile 은 config.qaProfiles 의 키. fast=implement+hooks 게이트만(reviewer/qa 에이전트 생략), normal=계획~qa(경량), full=풀체인. autoEscalate.toNormalMin 은 security.humanGateAreas 와 동일 출처(인증·암호화·입력검증·결제 변경이면 fast 여도 최소 normal 승격+security-reviewer 강제). toFull=아키텍처/인증방식/다중BC/breaking계약/동결대상 변경이면 full 승격. 승격은 state.md 에 사유와 함께 기록.",
+    "_absent_note": "이 modes 블록이 없으면(구 config) 티어 분기 없이 항상 full(lifecycle.phases 전체)로 동작한다 — 오늘과 동일(하위호환)."
+  },
+
+  "qaProfiles": {
+    "light": { "checks": ["ac", "regression"], "journeyMatrix": false, "contractTests": false, "conditionalParallel": false },
+    "full":  { "checks": ["ac", "regression", "journeys", "contract"], "journeyMatrix": true, "contractTests": true, "conditionalParallel": true },
+    "_note": "qa 의 검증 강도 프로파일(modes.tiers[*].qaProfile 이 참조). light=AC+회귀만(여정매트릭스·계약테스트 생략), full=전체 지표+조건부 e2e/security 병렬. 보안 자동 승격 하드룰은 프로파일과 무관하게 항상 적용된다(light 여도 보안 민감이면 security-reviewer 호출)."
+  },
+
   "domainExperts": {
     "order": ["dba", "be", "fe"],
     "roles": {
@@ -181,5 +204,5 @@
   },
   "_paths_note": "spec-first 문서(screenSpecs·screenDesigns)는 강제 게이트에서 제거됨. Researcher/Planner 가 존재하면 선택적 입력으로만 참조한다. runArtifacts=run-id 별 산출물(research/plan/review/qa/e2e/security/summary.md) 저장 루트. e2eTests·e2eGuide 는 /whale:e2e-init 이 스캐폴드하는 E2E 하네스 경로. claudeMd·featureDoc·featureTemplate 은 규약·모듈 문서 관례. progress·decisions·lessonsLearned 는 교차-run 메모리(.claude/whale/memory/, /whale:init 이 스캐폴드하고 run 간 누적).",
 
-  "_compat_note": "구(舊) 버전 호환: lifecycle 키가 없고 modeA_chain 만 있는 config 는 구 4역할 체인 모드(dba→be→fe→qa)로 동작한다(researcher/reviewer/summarizer/approval/loop 스킵). 새 기능을 쓰려면 /whale:init 재실행 또는 이 파일을 v2 스키마로 갱신한다."
+  "_compat_note": "구(舊) 버전 호환: (1) lifecycle 키가 없고 modeA_chain 만 있는 config 는 구 4역할 체인 모드(dba→be→fe→qa)로 동작한다(researcher/reviewer/summarizer/approval/loop 스킵). (2) modes 블록이 없으면 티어 분기 없이 항상 full(lifecycle.phases 전체)로 동작한다. 새 기능(강도 티어)을 쓰려면 /whale:init 재실행 또는 이 파일에 modes·qaProfiles 블록을 추가한다."
 }

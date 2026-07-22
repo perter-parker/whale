@@ -16,6 +16,7 @@ _없음_ — `/whale:start <task>` 로 시작한다.
 - **run-id:** `20260716-oauth-login-01`
 - **Task:** OAuth 소셜 로그인 추가
 - **Mode:** A (생애주기)
+- **Tier:** full (fast | normal | full — config.modes.tiers 에서 선택. 승격 시 갱신+사유)
 - **시작:** 2026-07-16
 - **마일스톤 범위:** <config.scopeDir 에서 확인한 현재 범위>
 - **현재 phase:** implement
@@ -24,6 +25,10 @@ _없음_ — `/whale:start <task>` 로 시작한다.
 
 ### 생애주기 진행
 
+> 진행표에는 **선택된 티어의 phase 만** 넣는다(config.modes.tiers[Tier].phases). 나머지는 `⤵ 스킵(tier=<t>)` 표기하거나 생략. 아래는 full 예시.
+> - fast: implement 한 행만(+ hooks 게이트가 품질 게이트, review/qa/summarize 없음).
+> - normal: plan·approve·implement·review·qa (research·summarize 스킵, qa 는 qaProfile=light).
+
 | # | phase | role | 상태 | 게이트 | 산출물/판정 |
 |---|-------|------|------|--------|-------------|
 | 1 | research  | researcher | ✅ 완료 | artifact | runs/<id>/research.md |
@@ -31,10 +36,10 @@ _없음_ — `/whale:start <task>` 로 시작한다.
 | 3 | approve   | —          | ✅ 승인 | approval | APPROVED 2026-07-16 |
 | 4 | implement | (도메인)   | ▶ 진행중 | artifact | 하위 dispatch 표 참조 |
 | 5 | review    | reviewer   | ⬜ 대기 | verdict  | 재구현 필요: — |
-| 6 | qa        | qa         | ⬜ 대기 | verdict  | 재구현 필요: — (E2E 수행 시 e2e.md 동반) |
+| 6 | qa        | qa         | ⬜ 대기 | verdict  | 재구현 필요: — (E2E/보안 수행 시 병렬, e2e.md·security.md 동반) |
 | 7 | summarize | summarizer | ⬜ 대기 | artifact | PR 디스크립션 |
 
-상태 표기: ✅ 완료 / ▶ 진행중 / ⬜ 대기 / 🔁 재구현중 / ⛔ 블로커
+상태 표기: ✅ 완료 / ▶ 진행중 / ⬜ 대기 / 🔁 재구현중 / ⛔ 블로커 / ⤵ 스킵(티어)
 
 #### implement 하위 dispatch (계획 P3 구현단계·P4 전문가배정 기준)
 

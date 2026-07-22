@@ -124,6 +124,20 @@
 - **Mode A (신규 작업):** `/whale:start` → 생애주기 루프. 각 phase 는 산출물 완료 + 게이트 통과 후 `/whale:next` 로 넘어간다. approve 게이트는 `/whale:approve` 로, 재구현 루프는 자동(최대 1회).
 - **Mode B (이슈 해결):** 고정 순서 없음. 이슈 성격에 맞는 역할(들)이 피어로 협업. run-id 생애주기와 독립.
 
+## 강도 티어 (Fast / Normal / Full) — v2.2
+
+Mode A/B 와 **직교하는 별개 차원.** Mode A 가 작업 크기와 무관하게 항상 풀체인을 타던 문제를 없애, `/whale:start` 가 작업을 자동 분류해 **돌 phase 집합을 티어로 고른다**(`config.modes`). 티어는 `lifecycle.phases`(정의 superset) 중 부분집합을 선택할 뿐이라 하위호환된다 — `modes` 블록이 없는 구 config 는 항상 full.
+
+| 티어 | phase | qa | 트리거(예) |
+|------|-------|-----|-----------|
+| **fast** | implement + hooks 게이트 | 생략 | 단일 파일·함수, 기존 패턴 답습, 신규 API/DB/계약·보안 무관한 작은 신규 변경 |
+| **normal** | plan → approve → implement → review → qa | light(AC+회귀) | 신규 API 1~2개·DB 컬럼 추가·신규 화면·non-breaking 계약 확장·단일 BC |
+| **full** | research → … → summarize | full(여정매트릭스·계약테스트, e2e‖security 병렬) | 아키텍처/인증 변경·다중 BC·breaking 계약·동결 대상·대규모 리팩터 |
+
+- **자동 승격 하드룰(크기 무관):** 인증·암호화·입력검증·결제(`security.humanGateAreas`) 변경이면 fast 여도 **최소 normal 승격 + security-reviewer 강제**. 아키텍처/다중BC/breaking 이면 **full 승격**. 승격은 `state.md` 에 사유와 함께 기록.
+- **경계:** 작은 **신규** = Fast 티어(`/whale:start`, run-id 발급) / **버그·이슈** = Mode B(`/whale:fix`, run-id 독립) / 오타·1줄 = 바이패스.
+- **Fast 의 품질 안전판:** review/qa 에이전트 대신 **hooks 게이트**(lint·typecheck, PostToolUse 강제)가 품질을 지킨다. 그래서 `/whale:hooks-init` 를 함께 쓰는 것을 권장.
+
 ## E2E 무인 테스트
 
 야간·무인 상황에서 AI에게 테스트를 맡기는 흐름을 위한 하네스다.
@@ -189,7 +203,9 @@ whale-plugin/
 | 키 | 용도 |
 |----|------|
 | `profile` | 도메인 특화 강도(`domain`: general 기본/public-sector-kr) · `multitenant`(site_id) · `architecture`(project — 내장 강제 없음) |
-| `lifecycle.phases` | 생애주기 phase 구성(id·role·gate·produces) |
+| `lifecycle.phases` | 생애주기 phase 구성(id·role·gate·produces) — 티어가 고르는 정의 superset |
+| `modes` | 강도 티어(fast/normal/full)별 phase 부분집합·qaProfile·자동승격 규칙. 없으면 항상 full(하위호환) |
+| `qaProfiles` | qa 검증 강도(light=AC+회귀 / full=여정매트릭스·계약테스트·조건부 병렬) |
 | `domainExperts` | Implementer 가 부르는 도메인 전문가(order·roles) |
 | `approvalGate` | 승인 문구 규칙(`APPROVED: {runId}`, acceptLoose) |
 | `feedbackLoop` | 재시도 상한(maxRetries)·복귀 대상·범위 |
